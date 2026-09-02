@@ -477,7 +477,6 @@ input {
 .game-card small { line-height: 1.35; }
 .game-card b { color: #805565; font-size: .75rem; }
 .game-card--memory .game-card__art { background: #d7cfed; }
-.game-card--fireflies .game-card__art { color: #fff; background: #676385; }
 .games-note { margin: 28px auto; text-align: center; font-size: .82rem; font-weight: 800; color: #805565; }
 
 .shop-balance { display: flex; align-items: center; justify-content: end; gap: 3px; font-size: 1rem; }
@@ -521,13 +520,6 @@ input {
 .lane-controls button { min-height: 50px; background: var(--cream); border: 3px solid var(--plum); font-weight: 800; cursor: pointer; }
 .lane-controls button.is-active { color: #fff; background: var(--dusty-rose); }
 .score-readout { text-align: center; margin: 12px 0 0; }
-
-.firefly-field { height: min(58dvh, 470px); min-height: 350px; position: relative; overflow: hidden; background: linear-gradient(#4e4d70 0 67%, #66765f 67% 72%, #425141 72%); border: 4px solid var(--plum); }
-.firefly-field::before { content: ""; position: absolute; width: 74px; height: 74px; right: 8%; top: 9%; background: #f7dda0; border: 4px solid var(--plum); border-radius: 50%; box-shadow: -12px 8px 0 #4e4d70; }
-.firefly-field::after { content: ""; position: absolute; left: -5%; right: -5%; bottom: 16%; height: 24%; background: repeating-linear-gradient(80deg, #526a50 0 17px, #61795b 17px 25px); clip-path: polygon(0 70%, 8% 35%, 16% 66%, 26% 20%, 35% 58%, 46% 28%, 57% 68%, 66% 31%, 78% 61%, 87% 25%, 100% 65%, 100% 100%, 0 100%); }
-.firefly-stars { position: absolute; left: 13%; top: 14%; width: 5px; height: 5px; background: #f8e9b8; box-shadow: 54px 43px #f8e9b8, 113px -16px #f8e9b8, 172px 36px #f8e9b8, 231px 5px #f8e9b8, 287px 57px #f8e9b8; }
-.firefly-target { position: absolute; z-index: 3; width: 58px; height: 58px; transform: translate(-50%, -50%); display: grid; place-items: center; padding: 0; background: rgba(255, 235, 162, .16); border: 2px solid #f8e9b8; border-radius: 50%; box-shadow: 0 0 0 7px rgba(255, 225, 128, .12); cursor: pointer; animation: firefly-pulse .7s steps(3) infinite; }
-@keyframes firefly-pulse { 50% { transform: translate(-50%, -50%) scale(1.12); box-shadow: 0 0 0 12px rgba(255, 225, 128, .1); } }
 
 .settings-list { display: grid; gap: 10px; }
 .setting-row { min-height: 67px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 14px; text-align: left; background: var(--cream); border: 3px solid var(--plum); box-shadow: 4px 4px 0 var(--blush); cursor: pointer; }
