@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.npm-cache/
+.vite/
+.env
+.env.local
+.env.*.local
+.playwright-cli/
+test-results/
+output/
+art/raw/
+art/snapped/
+art/chroma/
