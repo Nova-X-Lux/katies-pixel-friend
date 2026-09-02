@@ -11,6 +11,8 @@ export type PetMood =
 
 export type CareAction = "pet" | "wash" | "nap";
 
+export type RoomPhase = "day" | "night";
+
 export interface PetStats {
   fullness: number;
   happiness: number;
@@ -48,6 +50,14 @@ export interface FeedItem {
   icon: PixelIconName;
 }
 
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  icon: PixelIconName;
+}
+
 export type PixelIconName =
   | "fish"
   | "chicken"
@@ -60,4 +70,8 @@ export type PixelIconName =
   | "star"
   | "heart"
   | "controller"
-  | "moon";
+  | "moon"
+  | "shop"
+  | "flower"
+  | "yarn"
+  | "sparkle";

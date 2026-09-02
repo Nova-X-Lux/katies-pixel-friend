@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { applyTimeDecay, careForPet, createPetSave, deriveMood, feedPet } from "./gameState";
+import { applyTimeDecay, buyShopItem, careForPet, createPetSave, deriveMood, feedPet, getRoomPhase } from "./gameState";
 import { PETS } from "../data/pets";
+import { SHOP_ITEMS } from "../data/shop";
 
 describe("game state", () => {
   it("creates a safe starter pet", () => {
@@ -36,5 +37,21 @@ describe("game state", () => {
     const sleeping = careForPet(save, "nap");
     expect(sleeping.isSleeping).toBe(true);
     expect(deriveMood(sleeping)).toBe("sleeping");
+  });
+
+  it("buys a shop item once and places it in the room", () => {
+    const save = createPetSave("hamster", "Pip");
+    const cushion = SHOP_ITEMS.find((item) => item.id === "rose-cushion")!;
+    const bought = buyShopItem(save, cushion);
+    const selectedAgain = buyShopItem(bought, cushion);
+    expect(bought.coins).toBe(save.coins - cushion.cost);
+    expect(bought.unlockedDecorations).toContain(cushion.id);
+    expect(bought.selectedDecoration).toBe(cushion.id);
+    expect(selectedAgain.coins).toBe(bought.coins);
+  });
+
+  it("changes the room with local day and night time", () => {
+    expect(getRoomPhase(new Date(2026, 8, 2, 12))).toBe("day");
+    expect(getRoomPhase(new Date(2026, 8, 2, 23))).toBe("night");
   });
 });

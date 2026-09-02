@@ -1,7 +1,7 @@
 # Katie's Pixel Friend
 
 A phone-first, pixel-art virtual companion built for Katie. She can adopt a
-cat, hamster, or panda, name it, care for it, and earn coins through two small
+cat, hamster, or panda, name it, care for it, and earn coins through three small
 games. Progress saves on her phone immediately and syncs to Supabase when cloud
 configuration is available.
 
@@ -12,7 +12,9 @@ configuration is available.
 - Immediate companion naming
 - Mood-aware animal-specific dialogue
 - Feeding, petting, washing, sleeping, and gentle time decay
-- Treat Catch and Memory Pairs minigames
+- Treat Catch, Memory Pairs, and Firefly Glow minigames
+- A Cosy Shop with permanent decorations that can be swapped at any time
+- Automatic day and night room changes based on Katie's local time
 - Coins, high scores, and safe restart controls
 - Local-first saving and authenticated cloud sync
 - GitHub Pages build and installable mobile web-app shell

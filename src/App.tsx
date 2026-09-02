@@ -4,12 +4,13 @@ import { GameHub } from "./components/GameHub";
 import { LoginScreen } from "./components/LoginScreen";
 import { PetRoom } from "./components/PetRoom";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { ShopPanel } from "./components/ShopPanel";
 import { applyTimeDecay, awardGame, createPetSave } from "./lib/gameState";
 import { deleteCloudSave, restoreCloudUser, signOut } from "./lib/supabase";
 import { deleteLocalSave, loadBestSave, saveLocally, syncSave } from "./lib/storage";
 import type { AppUser, PetKind, PetSave } from "./types";
 
-type Screen = "room" | "games" | "settings";
+type Screen = "room" | "games" | "shop" | "settings";
 
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -81,6 +82,7 @@ export default function App() {
   if (!user) return <LoginScreen onLogin={setUser} />;
   if (!save) return <AdoptionScreen onAdopt={adopt} />;
   if (screen === "games") return <GameHub save={save} onAward={gameAward} onClose={() => setScreen("room")} />;
+  if (screen === "shop") return <ShopPanel save={save} onChange={changeSave} onClose={() => setScreen("room")} />;
   if (screen === "settings") return <SettingsPanel save={save} onClose={() => setScreen("room")} onRestart={restart} onLogout={logout} />;
-  return <PetRoom save={save} syncState={syncState} onChange={changeSave} onGames={() => setScreen("games")} onSettings={() => setScreen("settings")} />;
+  return <PetRoom save={save} syncState={syncState} onChange={changeSave} onGames={() => setScreen("games")} onShop={() => setScreen("shop")} onSettings={() => setScreen("settings")} />;
 }

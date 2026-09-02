@@ -13,6 +13,10 @@ const ICONS: Record<PixelIconName, string[]> = {
   heart: ["........", ".pp.pp..", "ppppppp.", "ppppppp.", ".ppppp..", "..ppp...", "...p....", "........"],
   controller: ["........", "..dddd..", ".dccccd.", "dccdcccd", "dccccdcd", ".dccccd.", "..d..d..", "........"],
   moon: ["...yyy..", "..yyyy..", ".yyyy...", ".yyyy...", ".yyyy...", "..yyyy..", "...yyy..", "........"],
+  shop: ["..dddd..", ".dppppd.", "dppppppd", "dppddppd", "dppppppd", "dppppppd", ".dddddd.", "........"],
+  flower: ["...p....", "..ppp...", ".ppdpp..", "..ppp...", "...g....", "..ggg...", "...g....", "........"],
+  yarn: ["..dddd..", ".dppppd.", "dppdpppd", "dpppdppd", "dppppdpd", ".dppppd.", "..dddd..", ".....dd."],
+  sparkle: ["...y....", "...y....", ".y.y.y..", "..yyy...", "yyyyyyy.", "..yyy...", ".y.y.y..", "...y...."],
 };
 
 const COLORS: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { PETS } from "../data/pets";
-import type { CareAction, FeedItem, PetKind, PetMood, PetSave, PetStats } from "../types";
+import type { CareAction, FeedItem, PetKind, PetMood, PetSave, PetStats, RoomPhase, ShopItem } from "../types";
 
 const clamp = (value: number) => Math.max(15, Math.min(100, Math.round(value)));
 
@@ -118,6 +118,32 @@ export function awardGame(save: PetSave, gameId: string, score: number, coins: n
       energy: clamp(save.stats.energy - 7),
     },
   });
+}
+
+export function buyShopItem(save: PetSave, item: ShopItem): PetSave {
+  const owned = save.unlockedDecorations ?? ["heart-lamp"];
+  if (owned.includes(item.id)) return touch(save, { selectedDecoration: item.id });
+  if (save.coins < item.cost) return save;
+  return touch(save, {
+    coins: save.coins - item.cost,
+    unlockedDecorations: [...owned, item.id],
+    selectedDecoration: item.id,
+    stats: {
+      ...save.stats,
+      happiness: clamp(save.stats.happiness + 4),
+    },
+  });
+}
+
+export function selectShopItem(save: PetSave, itemId: string): PetSave {
+  const owned = save.unlockedDecorations ?? ["heart-lamp"];
+  if (!owned.includes(itemId)) return save;
+  return touch(save, { selectedDecoration: itemId });
+}
+
+export function getRoomPhase(now = new Date()): RoomPhase {
+  const hour = now.getHours();
+  return hour >= 7 && hour < 19 ? "day" : "night";
 }
 
 export function getPetFoods(kind: PetKind): FeedItem[] {
