@@ -1,4 +1,4 @@
-const CACHE_NAME = "katies-pixel-friend-v3";
+const CACHE_NAME = "katies-pixel-friend-v4";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

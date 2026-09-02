@@ -15,7 +15,7 @@ export const PETS: Record<PetKind, PetDefinition> = {
     kind: "cat",
     label: "Cat",
     strapline: "Curious, cuddly and just a little dramatic.",
-    asset: asset("pets/cat.png"),
+    asset: asset("pets/cat.png?v=2"),
     foods: [
       { id: "cat-fish", name: "Fish bites", cost: 3, fullness: 22, happiness: 4, icon: "fish" },
       { id: "cat-chicken", name: "Chicken", cost: 4, fullness: 27, happiness: 6, icon: "chicken" },
