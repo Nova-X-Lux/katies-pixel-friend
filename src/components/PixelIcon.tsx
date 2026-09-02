@@ -10,6 +10,7 @@ const ICONS: Record<PixelIconName, string[]> = {
   bamboo: ["...gg...", "...gd...", "..ggd...", "...gd...", "...gdgg.", "...gdg..", "...gd...", "........"],
   berry: ["..ggg...", "...g....", ".dppd...", "dppppd..", "dppppd..", ".dppd...", "..dd....", "........"],
   star: ["...y....", "...y....", ".yyyyy..", "..yyy...", "..y.y...", ".y...y..", "........", "........"],
+  coin: ["........", "..dddd..", ".dyyyyd.", "dyyyyyyd", "dyyyyyyd", ".dyyyyd.", "..dddd..", "........"],
   heart: ["........", ".pp.pp..", "ppppppp.", "ppppppp.", ".ppppp..", "..ppp...", "...p....", "........"],
   controller: ["........", "..dddd..", ".dccccd.", "dccdcccd", "dccccdcd", ".dccccd.", "..d..d..", "........"],
   moon: ["...yyy..", "..yyyy..", ".yyyy...", ".yyyy...", ".yyyy...", "..yyyy..", "...yyy..", "........"],

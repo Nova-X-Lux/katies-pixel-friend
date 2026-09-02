@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { PETS } from "../data/pets";
+import { getTreatCatchReward } from "../lib/gameState";
 import type { PetKind, PixelIconName } from "../types";
+import { GameResultPanel } from "./GameResultPanel";
 import { PixelIcon } from "./PixelIcon";
 
 interface FallingTreat {
@@ -12,12 +14,19 @@ interface FallingTreat {
 
 const TREAT_ICONS: PixelIconName[] = ["apple", "berry", "carrot", "star"];
 
-export function TreatCatch({ petType, onFinish, onBack }: { petType: PetKind; onFinish: (score: number, coins: number) => void; onBack: () => void }) {
+interface RoundResult {
+  score: number;
+  previousBest: number;
+  coinsEarned: number;
+}
+
+export function TreatCatch({ petType, previousBest, onFinish, onBack }: { petType: PetKind; previousBest: number; onFinish: (score: number, coins: number) => void; onBack: () => void }) {
   const [status, setStatus] = useState<"ready" | "playing" | "done">("ready");
   const [lane, setLane] = useState(1);
   const [treats, setTreats] = useState<FallingTreat[]>([]);
   const [score, setScore] = useState(0);
   const [seconds, setSeconds] = useState(20);
+  const [result, setResult] = useState<RoundResult | null>(null);
   const idRef = useRef(0);
   const awarded = useRef(false);
   const laneRef = useRef(lane);
@@ -61,9 +70,11 @@ export function TreatCatch({ petType, onFinish, onBack }: { petType: PetKind; on
   useEffect(() => {
     if (status === "done" && !awarded.current) {
       awarded.current = true;
-      onFinish(score, 6 + Math.floor(score / 30));
+      const coinsEarned = getTreatCatchReward(score);
+      setResult({ score, previousBest, coinsEarned });
+      onFinish(score, coinsEarned);
     }
-  }, [onFinish, score, status]);
+  }, [onFinish, previousBest, score, status]);
 
   function start() {
     awarded.current = false;
@@ -71,6 +82,7 @@ export function TreatCatch({ petType, onFinish, onBack }: { petType: PetKind; on
     setSeconds(20);
     setTreats([]);
     setLane(1);
+    setResult(null);
     setStatus("playing");
   }
 
@@ -98,8 +110,16 @@ export function TreatCatch({ petType, onFinish, onBack }: { petType: PetKind; on
         {status === "ready" && (
           <div className="game-overlay"><PixelIcon name="apple" size={54} /><h2>Ready to catch?</h2><p>Move between the three lanes and catch as many treats as you can.</p><button className="primary-button" onClick={start}>Start game</button></div>
         )}
-        {status === "done" && (
-          <div className="game-overlay"><PixelIcon name="star" size={54} /><h2>{score} points!</h2><p>Your friend brought home {6 + Math.floor(score / 30)} coins.</p><button className="primary-button" onClick={start}>Play again</button><button className="text-button" onClick={onBack}>Back to games</button></div>
+        {status === "done" && result && (
+          <GameResultPanel
+            title={score === 0 ? "Let’s try once more" : "Treats collected!"}
+            score={result.score}
+            previousBest={result.previousBest}
+            coinsEarned={result.coinsEarned}
+            onReplay={start}
+            onBack={onBack}
+            overlay
+          />
         )}
       </div>
 

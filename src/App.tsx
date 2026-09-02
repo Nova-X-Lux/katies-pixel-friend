@@ -8,7 +8,7 @@ import { ShopPanel } from "./components/ShopPanel";
 import { applyTimeDecay, awardGame, createPetSave } from "./lib/gameState";
 import { deleteCloudSave, restoreCloudUser, signOut } from "./lib/supabase";
 import { deleteLocalSave, loadBestSave, saveLocally, syncSave } from "./lib/storage";
-import type { AppUser, PetKind, PetSave } from "./types";
+import type { AppUser, PetKind, PetSave, SyncStatus } from "./types";
 
 type Screen = "room" | "games" | "shop" | "settings";
 
@@ -17,7 +17,7 @@ export default function App() {
   const [save, setSave] = useState<PetSave | null>(null);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState<Screen>("room");
-  const [syncState, setSyncState] = useState<"saved" | "saving" | "offline">("saved");
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ phase: "saved", lastSavedAt: null });
   const didLoadRef = useRef(false);
 
   useEffect(() => {
@@ -34,6 +34,10 @@ export default function App() {
       const next = loaded ? applyTimeDecay(loaded) : null;
       setSave(next);
       if (next) saveLocally(user.id, next);
+      setSyncStatus({
+        phase: user.cloud ? "saved" : "local",
+        lastSavedAt: next?.updatedAt ?? null,
+      });
       didLoadRef.current = true;
       setLoading(false);
     });
@@ -42,13 +46,25 @@ export default function App() {
   useEffect(() => {
     if (!user || !save || !didLoadRef.current) return;
     saveLocally(user.id, save);
-    setSyncState(user.cloud ? "saving" : "offline");
+    if (!user.cloud) {
+      setSyncStatus({ phase: "local", lastSavedAt: save.updatedAt });
+      return;
+    }
+    setSyncStatus((current) => ({ ...current, phase: "saving" }));
+    let cancelled = false;
     const timer = window.setTimeout(() => {
       syncSave(user, save)
-        .then(() => setSyncState(user.cloud ? "saved" : "offline"))
-        .catch(() => setSyncState("offline"));
+        .then(() => {
+          if (!cancelled) setSyncStatus({ phase: "saved", lastSavedAt: save.updatedAt });
+        })
+        .catch(() => {
+          if (!cancelled) setSyncStatus((current) => ({ ...current, phase: "error" }));
+        });
     }, 450);
-    return () => window.clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [save, user]);
 
   const changeSave = useCallback((next: PetSave) => setSave(next), []);
@@ -62,12 +78,29 @@ export default function App() {
     setSave((current) => current ? awardGame(current, gameId, score, coins) : current);
   }
 
+  async function retrySync() {
+    if (!user || !save) return;
+    saveLocally(user.id, save);
+    if (!user.cloud) {
+      setSyncStatus({ phase: "local", lastSavedAt: save.updatedAt });
+      return;
+    }
+    setSyncStatus((current) => ({ ...current, phase: "saving" }));
+    try {
+      await syncSave(user, save);
+      setSyncStatus({ phase: "saved", lastSavedAt: save.updatedAt });
+    } catch {
+      setSyncStatus((current) => ({ ...current, phase: "error" }));
+    }
+  }
+
   async function logout() {
     await signOut();
     didLoadRef.current = false;
     setUser(null);
     setSave(null);
     setScreen("room");
+    setSyncStatus({ phase: "saved", lastSavedAt: null });
   }
 
   async function restart() {
@@ -83,6 +116,6 @@ export default function App() {
   if (!save) return <AdoptionScreen onAdopt={adopt} />;
   if (screen === "games") return <GameHub save={save} onAward={gameAward} onClose={() => setScreen("room")} />;
   if (screen === "shop") return <ShopPanel save={save} onChange={changeSave} onClose={() => setScreen("room")} />;
-  if (screen === "settings") return <SettingsPanel save={save} onClose={() => setScreen("room")} onRestart={restart} onLogout={logout} />;
-  return <PetRoom save={save} syncState={syncState} onChange={changeSave} onGames={() => setScreen("games")} onShop={() => setScreen("shop")} onSettings={() => setScreen("settings")} />;
+  if (screen === "settings") return <SettingsPanel user={user} save={save} syncStatus={syncStatus} onRetrySync={retrySync} onClose={() => setScreen("room")} onRestart={restart} onLogout={logout} />;
+  return <PetRoom save={save} syncStatus={syncStatus} onChange={changeSave} onGames={() => setScreen("games")} onShop={() => setScreen("shop")} onSettings={() => setScreen("settings")} />;
 }

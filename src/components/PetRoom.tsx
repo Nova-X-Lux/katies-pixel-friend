@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { PETS, getDialogue } from "../data/pets";
-import { careForPet, deriveMood, feedPet, getRoomPhase, wakePet } from "../lib/gameState";
-import type { CareAction, PetSave } from "../types";
+import { careForPet, deriveMood, feedPet, formatPetAge, getFeedAvailability, getRoomPhase, wakePet } from "../lib/gameState";
+import type { CareAction, PetSave, SyncStatus } from "../types";
 import { PixelIcon } from "./PixelIcon";
 import { StatBar } from "./StatBar";
 
 interface PetRoomProps {
   save: PetSave;
-  syncState: "saved" | "saving" | "offline";
+  syncStatus: SyncStatus;
   onChange: (next: PetSave) => void;
   onGames: () => void;
   onShop: () => void;
@@ -23,17 +23,30 @@ function RoomDecoration({ itemId }: { itemId: string }) {
   return <div className="heart-lamp" aria-hidden="true"><PixelIcon name="heart" size={28} /></div>;
 }
 
-export function PetRoom({ save, syncState, onChange, onGames, onShop, onSettings }: PetRoomProps) {
+export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSettings }: PetRoomProps) {
   const [sheet, setSheet] = useState<"feed" | "care" | null>(null);
   const [dialogueSeed, setDialogueSeed] = useState(() => Date.now());
   const [roomPhase, setRoomPhase] = useState(getRoomPhase);
   const mood = deriveMood(save);
   const pet = PETS[save.petType];
   const selectedDecoration = save.selectedDecoration || "heart-lamp";
+  const petAge = formatPetAge(save.createdAt);
   const dialogue = useMemo(
-    () => getDialogue(save.petType, mood, dialogueSeed),
-    [save.petType, mood, dialogueSeed],
+    () => getDialogue(save.petType, mood, dialogueSeed, {
+      phase: roomPhase,
+      selectedDecoration,
+      lastInteraction: save.lastInteraction,
+    }),
+    [save.petType, save.lastInteraction, mood, dialogueSeed, roomPhase, selectedDecoration],
   );
+
+  const syncCopy = syncStatus.phase === "saved"
+    ? "Saved to cloud"
+    : syncStatus.phase === "saving"
+      ? "Saving…"
+      : syncStatus.phase === "error"
+        ? "Cloud retry needed"
+        : "Saved on this phone";
 
   useEffect(() => {
     const timer = window.setInterval(() => setRoomPhase(getRoomPhase()), 60_000);
@@ -49,8 +62,8 @@ export function PetRoom({ save, syncState, onChange, onGames, onShop, onSettings
   return (
     <main className="game-shell">
       <header className="game-topbar">
-        <div className="coin-pill"><PixelIcon name="star" size={24} /><strong>{save.coins}</strong></div>
-        <div className="room-status"><span>{roomPhase === "day" ? "☀ Day" : "☾ Night"}</span><p className={`sync-state sync-state--${syncState}`}>{syncState === "saved" ? "Saved" : syncState === "saving" ? "Saving…" : "Saved on this phone"}</p></div>
+        <div className="coin-pill" aria-label={`${save.coins} coins`}><PixelIcon name="coin" size={24} /><strong>{save.coins}</strong></div>
+        <div className="room-status"><span>{roomPhase === "day" ? "☀ Day" : "☾ Night"}</span><p className={`sync-state sync-state--${syncStatus.phase}`}>{syncCopy}</p></div>
         <button className="icon-button" onClick={onSettings} aria-label="Open settings">⚙</button>
       </header>
 
@@ -74,7 +87,7 @@ export function PetRoom({ save, syncState, onChange, onGames, onShop, onSettings
 
       <section className="pet-panel">
         <div className="speech-bubble">
-          <div><h1>{save.petName}</h1><span>{pet.label}</span></div>
+          <div><h1>{save.petName}</h1><span>{pet.label} · {petAge}</span></div>
           <p>“{dialogue}”</p>
         </div>
 
@@ -100,13 +113,25 @@ export function PetRoom({ save, syncState, onChange, onGames, onShop, onSettings
             <div className="sheet-heading"><h2>{sheet === "feed" ? "Choose a snack" : `Care for ${save.petName}`}</h2><button onClick={() => setSheet(null)} aria-label="Close">×</button></div>
             {sheet === "feed" ? (
               <div className="item-list">
-                {pet.foods.map((item) => (
-                  <button key={item.id} disabled={save.coins < item.cost} onClick={() => { onChange(feedPet(save, item)); setDialogueSeed(Date.now()); setSheet(null); }}>
-                    <PixelIcon name={item.icon} size={38} />
-                    <span><strong>{item.name}</strong><small>+{item.fullness} fullness</small></span>
-                    <b>{item.cost} ★</b>
-                  </button>
-                ))}
+                {pet.foods.map((item) => {
+                  const availability = getFeedAvailability(save, item);
+                  const status = availability.reason === "too-full"
+                    ? "Too full for this"
+                    : availability.reason === "not-enough-coins"
+                      ? `Need ${item.cost} coins`
+                      : `+${availability.fullnessGain} Full · +${availability.happinessGain} Happy`;
+                  return (
+                    <button
+                      key={item.id}
+                      disabled={!availability.allowed}
+                      onClick={() => { onChange(feedPet(save, item)); setDialogueSeed(Date.now()); setSheet(null); }}
+                    >
+                      <PixelIcon name={item.icon} size={38} />
+                      <span><strong>{item.name}</strong><small>{status}</small></span>
+                      <b>{item.cost} coins</b>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="item-list">

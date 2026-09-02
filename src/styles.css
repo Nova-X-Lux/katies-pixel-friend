@@ -38,6 +38,10 @@ input {
   font: inherit;
 }
 
+.password-field { position: relative; display: block; }
+.password-field input { padding-right: 73px; }
+.password-field button { position: absolute; top: 6px; right: 6px; min-width: 59px; min-height: 38px; padding: 4px 8px; color: var(--plum); background: var(--petal); border: 2px solid var(--plum); font-size: .74rem; font-weight: 800; cursor: pointer; }
+
 button {
   color: inherit;
   -webkit-tap-highlight-color: transparent;
@@ -181,6 +185,8 @@ h2,
 
 label { display: grid; gap: 7px; }
 label > span { font-size: .8rem; font-weight: 800; }
+.login-field { display: grid; gap: 7px; }
+.login-field > label { display: block; font-size: .8rem; font-weight: 800; }
 
 input {
   width: 100%;
@@ -289,7 +295,9 @@ input {
 .sync-state { margin: 0; font-size: .68rem; font-weight: 800; color: #725866; }
 .sync-state::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; background: var(--sage); }
 .sync-state--saving::before { background: var(--gold); }
-.sync-state--offline::before { background: #8f87b8; }
+.sync-state--local::before { background: var(--lavender); }
+.sync-state--error { color: #8d304c; }
+.sync-state--error::before { background: #b95666; }
 .room-status { display: grid; justify-items: center; gap: 2px; }
 .room-status > span { font-family: "Pixelify Sans", monospace; font-size: .77rem; font-weight: 700; color: #684454; }
 
@@ -433,7 +441,7 @@ input {
 .speech-bubble { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; margin-bottom: 11px; }
 .speech-bubble > div { min-width: 105px; padding-right: 10px; border-right: 3px solid var(--blush); }
 .speech-bubble h1 { margin: 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-size: 1.75rem; line-height: 1; }
-.speech-bubble span { color: #805565; font-size: .72rem; font-weight: 800; }
+.speech-bubble span { display: block; margin-top: 3px; color: #805565; font-size: .68rem; font-weight: 800; line-height: 1.2; }
 .speech-bubble p { margin: 0; font-size: .84rem; line-height: 1.35; font-weight: 700; }
 
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; margin-bottom: 12px; }
@@ -483,6 +491,13 @@ input {
 .shop-intro { display: grid; grid-template-columns: auto 1fr; gap: 13px; align-items: center; margin-bottom: 17px; padding: 13px 15px; background: #fff3ec; border: 3px solid var(--plum); box-shadow: 4px 4px 0 var(--blush); }
 .shop-intro strong { font-family: "Pixelify Sans", monospace; font-size: 1.35rem; }
 .shop-intro p { margin: 2px 0 0; color: #805565; font-size: .78rem; line-height: 1.35; }
+.shop-filters { display: grid; gap: 8px; margin-bottom: 17px; }
+.filter-scroll { display: flex; gap: 7px; padding: 2px 3px 5px; overflow-x: auto; scrollbar-width: none; }
+.filter-scroll::-webkit-scrollbar { display: none; }
+.filter-scroll button { min-height: 36px; flex: 0 0 auto; padding: 6px 11px; background: var(--cream); border: 2px solid var(--plum); box-shadow: 2px 2px 0 var(--blush); font-size: .75rem; font-weight: 800; cursor: pointer; }
+.filter-scroll button.is-active { color: #fff; background: var(--dusty-rose); box-shadow: 2px 2px 0 var(--plum); }
+.filter-scroll--categories button { min-height: 32px; padding-block: 4px; color: #684454; background: #f6e7e9; font-size: .69rem; }
+.filter-scroll--categories button.is-active { color: var(--plum); background: #f1c66b; }
 .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
 .shop-card { min-width: 0; padding: 9px; background: var(--cream); border: 3px solid var(--plum); box-shadow: 4px 4px 0 var(--blush); }
 .shop-card.is-selected { background: #f4d6dd; box-shadow: 4px 4px 0 var(--plum); }
@@ -492,20 +507,34 @@ input {
 .shop-card__art--flower-rug { background: #d9e2d3; }
 .shop-card__art > span:last-child:not(.pixel-icon) { position: absolute; right: 4px; bottom: 4px; padding: 2px 5px; color: #fff; background: var(--plum); font-size: .62rem; font-weight: 800; }
 .shop-card h2 { margin: 0 0 4px; font-size: 1.18rem; line-height: 1; }
+.shop-card__category { display: inline-block; margin-bottom: 5px; color: #805565; font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 .shop-card p { min-height: 43px; margin-bottom: 9px; color: #765967; font-size: .72rem; line-height: 1.3; }
 .shop-card button { width: 100%; min-height: 39px; padding: 5px; color: #fff; background: var(--dusty-rose); border: 2px solid var(--plum); box-shadow: 2px 2px 0 var(--plum); font-family: "Pixelify Sans", monospace; font-weight: 700; cursor: pointer; }
 .shop-card button:disabled { color: #715763; background: #dfced2; box-shadow: none; cursor: default; }
+.shop-empty { display: grid; justify-items: center; gap: 5px; margin-top: 10px; padding: 30px 18px; text-align: center; background: var(--cream); border: 3px dashed var(--plum); }
+.shop-empty strong { font-family: "Pixelify Sans", monospace; font-size: 1.25rem; }
+.shop-empty p { margin: 0; color: #805565; font-size: .8rem; }
 
 .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.memory-card { aspect-ratio: .84; position: relative; padding: 0; transform-style: preserve-3d; background: var(--dusty-rose); border: 3px solid var(--plum); box-shadow: 3px 3px 0 var(--plum); cursor: pointer; }
-.memory-card > span { position: absolute; inset: 0; display: grid; place-items: center; backface-visibility: hidden; }
+.memory-card { aspect-ratio: .84; position: relative; padding: 0; background: var(--dusty-rose); border: 3px solid var(--plum); box-shadow: 3px 3px 0 var(--plum); cursor: pointer; }
+.memory-card > span { position: absolute; inset: 0; display: grid; place-items: center; }
 .memory-card__back { font-family: "Pixelify Sans"; color: #fff; font-size: 2rem; }
-.memory-card__face { transform: rotateY(180deg); background: var(--cream); }
-.memory-card.is-open { transform: rotateY(180deg); box-shadow: -3px 3px 0 var(--plum); }
+.memory-card__face { opacity: 0; background: var(--cream); }
+.memory-card.is-open { box-shadow: -3px 3px 0 var(--plum); }
+.memory-card.is-open .memory-card__back { opacity: 0; }
+.memory-card.is-open .memory-card__face { opacity: 1; }
 .memory-card.is-matched { opacity: .63; }
-.game-result { margin-top: 20px; padding: 20px; text-align: center; background: var(--cream); border: var(--pixel-border); box-shadow: 5px 5px 0 var(--ink-shadow); }
-.game-result h2 { margin: 6px 0; }
-.game-result p { font-size: .86rem; }
+.game-result { display: grid; justify-items: center; gap: 9px; margin-top: 20px; padding: 20px; text-align: center; background: var(--cream); border: var(--pixel-border); box-shadow: 5px 5px 0 var(--ink-shadow); }
+.game-result h2 { margin: 0; font-size: 1.55rem; }
+.game-result p { margin: 0; font-size: .8rem; color: #805565; }
+.game-result--overlay { position: absolute; z-index: 5; inset: 6%; align-content: center; margin: 0; overflow-y: auto; box-shadow: 6px 6px 0 var(--ink-shadow); }
+.new-best { padding: 3px 8px; color: #fff; background: var(--dusty-rose); border: 2px solid var(--plum); font-family: "Pixelify Sans", monospace; font-size: .82rem; }
+.result-stats { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.result-stats > span { min-width: 0; display: grid; gap: 2px; padding: 8px 3px; background: #f7e6e8; border: 2px solid var(--plum); }
+.result-stats small { color: #805565; font-size: .59rem; font-weight: 800; line-height: 1.1; }
+.result-stats strong { font-family: "Pixelify Sans", monospace; font-size: 1.1rem; }
+.result-actions { width: 100%; display: grid; gap: 5px; }
+.result-actions .primary-button { min-height: 44px; padding: 7px 14px; font-size: 1.05rem; }
 
 .catch-field { height: min(58dvh, 470px); min-height: 350px; position: relative; overflow: hidden; background: linear-gradient(#d9d4ef 0 63%, #bb8a94 63% 65%, #98717b 65%); border: 4px solid var(--plum); }
 .lane-lines { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
@@ -522,6 +551,19 @@ input {
 .score-readout { text-align: center; margin: 12px 0 0; }
 
 .settings-list { display: grid; gap: 10px; }
+.account-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; background: #fff3ec; border: 3px solid var(--plum); box-shadow: 4px 4px 0 var(--blush); }
+.account-card__icon { width: 48px; height: 48px; display: grid; place-items: center; color: #fff; background: var(--dusty-rose); border: 3px solid var(--plum); font-family: "Pixelify Sans", monospace; font-size: 1.45rem; }
+.account-card__copy { min-width: 0; display: grid; gap: 2px; }
+.account-card__copy > span { color: #805565; font-size: .68rem; font-weight: 800; }
+.account-card__copy strong { overflow: hidden; text-overflow: ellipsis; font-family: "Pixelify Sans", monospace; font-size: 1.25rem; }
+.account-card__copy small { color: #805565; font-size: .68rem; line-height: 1.3; }
+.account-save { font-weight: 800; }
+.account-save::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; background: var(--sage); }
+.account-save--saving::before { background: var(--gold); }
+.account-save--local::before { background: var(--lavender); }
+.account-save--error { color: #8d304c !important; }
+.account-save--error::before { background: #b95666; }
+.retry-button { min-height: 38px; padding: 5px 9px; color: #fff; background: var(--dusty-rose); border: 2px solid var(--plum); box-shadow: 2px 2px 0 var(--plum); font-weight: 800; cursor: pointer; }
 .setting-row { min-height: 67px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 14px; text-align: left; background: var(--cream); border: 3px solid var(--plum); box-shadow: 4px 4px 0 var(--blush); cursor: pointer; }
 .setting-row > span { display: grid; gap: 3px; }
 .setting-row small { color: #805565; }
@@ -559,6 +601,10 @@ input {
   .speech-bubble p { font-size: .77rem; }
   .action-dock button { min-height: 57px; }
   .memory-grid { gap: 7px; }
+  .game-result--overlay { inset: 4%; padding: 13px; gap: 6px; }
+  .result-stats small { font-size: .54rem; }
+  .account-card { grid-template-columns: auto minmax(0, 1fr); }
+  .retry-button { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

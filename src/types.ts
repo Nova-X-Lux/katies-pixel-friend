@@ -13,6 +13,22 @@ export type CareAction = "pet" | "wash" | "nap";
 
 export type RoomPhase = "day" | "night";
 
+export type PetInteractionKind =
+  | "adopted"
+  | "fed"
+  | "petted"
+  | "washed"
+  | "napped"
+  | "woken"
+  | "played"
+  | "decorated";
+
+export interface PetInteraction {
+  kind: PetInteractionKind;
+  at: string;
+  detail?: string;
+}
+
 export interface PetStats {
   fullness: number;
   happiness: number;
@@ -21,7 +37,7 @@ export interface PetStats {
 }
 
 export interface PetSave {
-  version: 1;
+  version: 2;
   petType: PetKind;
   petName: string;
   stats: PetStats;
@@ -33,12 +49,20 @@ export interface PetSave {
   lastSeenAt: string;
   createdAt: string;
   updatedAt: string;
+  lastInteraction?: PetInteraction;
 }
 
 export interface AppUser {
   id: string;
   username: string;
   cloud: boolean;
+}
+
+export type SyncPhase = "saved" | "saving" | "local" | "error";
+
+export interface SyncStatus {
+  phase: SyncPhase;
+  lastSavedAt: string | null;
 }
 
 export interface FeedItem {
@@ -56,7 +80,10 @@ export interface ShopItem {
   description: string;
   cost: number;
   icon: PixelIconName;
+  category: ShopCategory;
 }
+
+export type ShopCategory = "lights" | "soft" | "toys" | "decorations";
 
 export type PixelIconName =
   | "fish"
@@ -68,6 +95,7 @@ export type PixelIconName =
   | "bamboo"
   | "berry"
   | "star"
+  | "coin"
   | "heart"
   | "controller"
   | "moon"

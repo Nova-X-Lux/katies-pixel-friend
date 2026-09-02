@@ -8,6 +8,7 @@ export function LoginScreen({ onLogin }: { onLogin: (user: AppUser) => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -46,17 +47,28 @@ export function LoginScreen({ onLogin }: { onLogin: (user: AppUser) => void }) {
               required
             />
           </label>
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-              minLength={6}
-              required
-            />
-          </label>
+          <div className="login-field">
+            <label htmlFor="login-password">Password</label>
+            <div className="password-field">
+              <input
+                id="login-password"
+                type={passwordVisible ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setPasswordVisible((visible) => !visible)}
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                aria-pressed={passwordVisible}
+              >
+                {passwordVisible ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="primary-button" disabled={busy}>
             {busy ? "Opening the door…" : "Enter"}

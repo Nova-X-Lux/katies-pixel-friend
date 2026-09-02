@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { PetSave } from "../types";
+import type { AppUser, PetSave, SyncStatus } from "../types";
 
 function HoldToRestart({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -42,10 +42,36 @@ function HoldToRestart({ disabled, onConfirm }: { disabled: boolean; onConfirm: 
   );
 }
 
-export function SettingsPanel({ save, onClose, onRestart, onLogout }: { save: PetSave; onClose: () => void; onRestart: () => void; onLogout: () => void }) {
+function formatLastSaved(value: string | null, now: number): string {
+  if (!value) return "Not saved yet";
+  const elapsedMinutes = Math.max(0, Math.floor((now - new Date(value).getTime()) / 60_000));
+  if (elapsedMinutes < 1) return "Last saved just now";
+  if (elapsedMinutes < 60) return `Last saved ${elapsedMinutes} minute${elapsedMinutes === 1 ? "" : "s"} ago`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `Last saved ${elapsedHours} hour${elapsedHours === 1 ? "" : "s"} ago`;
+  return `Last saved ${new Date(value).toLocaleDateString([], { day: "numeric", month: "short" })}`;
+}
+
+interface SettingsPanelProps {
+  user: AppUser;
+  save: PetSave;
+  syncStatus: SyncStatus;
+  onRetrySync: () => Promise<void>;
+  onClose: () => void;
+  onRestart: () => void;
+  onLogout: () => void;
+}
+
+export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, onRestart, onLogout }: SettingsPanelProps) {
   const [sound, setSound] = useState(() => localStorage.getItem("kpf:sound") === "on");
   const [restartOpen, setRestartOpen] = useState(false);
   const [typedName, setTypedName] = useState("");
+  const [clock, setClock] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   function toggleSound() {
     setSound((current) => {
@@ -59,6 +85,26 @@ export function SettingsPanel({ save, onClose, onRestart, onLogout }: { save: Pe
     <main className="settings-shell">
       <header className="screen-heading"><button onClick={onClose} className="back-button">‹ Room</button><div><p>Make it yours</p><h1>Settings</h1></div><span /></header>
       <section className="settings-list">
+        <article className="account-card">
+          <div className="account-card__icon" aria-hidden="true">{user.username.slice(0, 1).toUpperCase()}</div>
+          <div className="account-card__copy">
+            <span>Playing as</span>
+            <strong>{user.username}</strong>
+            <small className={`account-save account-save--${syncStatus.phase}`}>
+              {syncStatus.phase === "saving"
+                ? "Saving to cloud…"
+                : syncStatus.phase === "error"
+                  ? "Saved on this phone · cloud retry needed"
+                  : user.cloud
+                    ? "Cloud save connected"
+                    : "Local preview on this phone"}
+            </small>
+            <small>{formatLastSaved(syncStatus.lastSavedAt, clock)}</small>
+          </div>
+          {syncStatus.phase === "error" && user.cloud && (
+            <button className="retry-button" onClick={() => void onRetrySync()}>Retry</button>
+          )}
+        </article>
         <button className="setting-row" onClick={toggleSound}><span><strong>Sound effects</strong><small>Starts muted on this phone</small></span><b className={`toggle ${sound ? "is-on" : ""}`}><i /></b></button>
         <button className="setting-row" onClick={() => setRestartOpen((open) => !open)}><span><strong>Restart companion</strong><small>Return to the adoption screen</small></span><b>›</b></button>
         {restartOpen && (
@@ -71,7 +117,7 @@ export function SettingsPanel({ save, onClose, onRestart, onLogout }: { save: Pe
         )}
         <button className="setting-row" onClick={onLogout}><span><strong>Sign out</strong><small>Your saved friend will still be here</small></span><b>›</b></button>
       </section>
-      <p className="version-note">Katie’s Pixel Friend · Friday edition</p>
+      <p className="version-note">Katie’s Pixel Friend · Cosy Room Edition</p>
     </main>
   );
 }

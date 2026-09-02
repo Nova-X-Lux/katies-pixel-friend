@@ -7,6 +7,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "A warm glow for cosy evenings.",
     cost: 0,
     icon: "heart",
+    category: "lights",
   },
   {
     id: "rose-cushion",
@@ -14,6 +15,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "The squishiest seat in the room.",
     cost: 10,
     icon: "heart",
+    category: "soft",
   },
   {
     id: "yarn-ball",
@@ -21,6 +23,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "A tiny toy for happy zoomies.",
     cost: 9,
     icon: "yarn",
+    category: "toys",
   },
   {
     id: "flower-rug",
@@ -28,6 +31,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "Soft petals under little paws.",
     cost: 14,
     icon: "flower",
+    category: "soft",
   },
   {
     id: "moon-mobile",
@@ -35,6 +39,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "Gentle moonlight for sleepy pets.",
     cost: 16,
     icon: "moon",
+    category: "decorations",
   },
   {
     id: "starlight-jar",
@@ -42,5 +47,6 @@ export const SHOP_ITEMS: ShopItem[] = [
     description: "A pocketful of stars beside the bed.",
     cost: 18,
     icon: "sparkle",
+    category: "lights",
   },
 ];

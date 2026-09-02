@@ -9,8 +9,8 @@ type GameId = "memory" | "catch";
 export function GameHub({ save, onAward, onClose }: { save: PetSave; onAward: (gameId: string, score: number, coins: number) => void; onClose: () => void }) {
   const [game, setGame] = useState<GameId | null>(null);
 
-  if (game === "memory") return <MemoryGame onFinish={(score, coins) => onAward("memory", score, coins)} onBack={() => setGame(null)} />;
-  if (game === "catch") return <TreatCatch petType={save.petType} onFinish={(score, coins) => onAward("catch", score, coins)} onBack={() => setGame(null)} />;
+  if (game === "memory") return <MemoryGame previousBest={save.highScores.memory ?? 0} onFinish={(score, coins) => onAward("memory", score, coins)} onBack={() => setGame(null)} />;
+  if (game === "catch") return <TreatCatch petType={save.petType} previousBest={save.highScores.catch ?? 0} onFinish={(score, coins) => onAward("catch", score, coins)} onBack={() => setGame(null)} />;
 
   return (
     <main className="games-shell">

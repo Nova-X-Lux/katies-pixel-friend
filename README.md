@@ -10,13 +10,14 @@ configuration is available.
 - Username and password login with no email field
 - Cat, hamster, and panda adoption
 - Immediate companion naming
-- Mood-aware animal-specific dialogue
+- Mood, time, action, and decoration-aware dialogue
+- A friendly age calculated from the original adoption date
 - Feeding, petting, washing, sleeping, and gentle time decay
-- Treat Catch and Memory Pairs minigames
-- A Cosy Shop with permanent decorations that can be swapped at any time
+- Treat Catch and Memory Pairs minigames with detailed results and replay
+- A filterable Cosy Shop with permanent decorations that can be swapped at any time
 - Automatic day and night room changes based on Katie's local time
 - Coins, high scores, and safe restart controls
-- Local-first saving and authenticated cloud sync
+- Local-first saving with visible account, sync, and recovery status
 - GitHub Pages build and installable mobile web-app shell
 
 The companion never dies, runs away, or shames Katie for being absent. Needs

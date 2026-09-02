@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getMemoryReward } from "../lib/gameState";
 import type { PixelIconName } from "../types";
+import { GameResultPanel } from "./GameResultPanel";
 import { PixelIcon } from "./PixelIcon";
 
 const SYMBOLS: PixelIconName[] = ["fish", "carrot", "apple", "bamboo", "heart", "controller"];
@@ -16,11 +18,18 @@ function shuffledCards(): Card[] {
     .map(({ id, icon }) => ({ id, icon }));
 }
 
-export function MemoryGame({ onFinish, onBack }: { onFinish: (score: number, coins: number) => void; onBack: () => void }) {
-  const cards = useMemo(shuffledCards, []);
+interface RoundResult {
+  score: number;
+  previousBest: number;
+  coinsEarned: number;
+}
+
+export function MemoryGame({ previousBest, onFinish, onBack }: { previousBest: number; onFinish: (score: number, coins: number) => void; onBack: () => void }) {
+  const [cards, setCards] = useState<Card[]>(shuffledCards);
   const [open, setOpen] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
+  const [result, setResult] = useState<RoundResult | null>(null);
   const awarded = useRef(false);
 
   useEffect(() => {
@@ -38,14 +47,25 @@ export function MemoryGame({ onFinish, onBack }: { onFinish: (score: number, coi
     if (matched.length === SYMBOLS.length && !awarded.current) {
       awarded.current = true;
       const score = Math.max(100, 1000 - Math.max(0, moves - 6) * 35);
-      onFinish(score, 10 + Math.max(0, 8 - Math.floor(moves / 3)));
+      const coinsEarned = getMemoryReward(moves);
+      setResult({ score, previousBest, coinsEarned });
+      onFinish(score, coinsEarned);
     }
-  }, [matched.length, moves, onFinish]);
+  }, [matched.length, moves, onFinish, previousBest]);
 
   function flip(card: Card) {
     if (open.length >= 2 || open.includes(card.id) || matched.includes(card.icon)) return;
     setOpen((current) => [...current, card.id]);
     if (open.length === 1) setMoves((current) => current + 1);
+  }
+
+  function replay() {
+    awarded.current = false;
+    setCards(shuffledCards());
+    setOpen([]);
+    setMatched([]);
+    setMoves(0);
+    setResult(null);
   }
 
   const complete = matched.length === SYMBOLS.length;
@@ -73,13 +93,15 @@ export function MemoryGame({ onFinish, onBack }: { onFinish: (score: number, coi
           );
         })}
       </div>
-      {complete && (
-        <div className="game-result" role="status">
-          <PixelIcon name="star" size={42} />
-          <h2>Every pair found!</h2>
-          <p>Your friend earned a pocketful of coins.</p>
-          <button className="primary-button" onClick={onBack}>Back to games</button>
-        </div>
+      {complete && result && (
+        <GameResultPanel
+          title="Every pair found!"
+          score={result.score}
+          previousBest={result.previousBest}
+          coinsEarned={result.coinsEarned}
+          onReplay={replay}
+          onBack={onBack}
+        />
       )}
     </section>
   );
