@@ -38,10 +38,6 @@ input {
   font: inherit;
 }
 
-.password-field { position: relative; display: block; }
-.password-field input { padding-right: 73px; }
-.password-field button { position: absolute; top: 6px; right: 6px; min-width: 59px; min-height: 38px; padding: 4px 8px; color: var(--plum); background: var(--petal); border: 2px solid var(--plum); font-size: .74rem; font-weight: 800; cursor: pointer; }
-
 button {
   color: inherit;
   -webkit-tap-highlight-color: transparent;
@@ -185,8 +181,7 @@ h2,
 
 label { display: grid; gap: 7px; }
 label > span { font-size: .8rem; font-weight: 800; }
-.login-field { display: grid; gap: 7px; }
-.login-field > label { display: block; font-size: .8rem; font-weight: 800; }
+.username-hint { margin: -7px 0 0; color: #725866; font-size: .78rem; line-height: 1.35; text-align: center; }
 
 input {
   width: 100%;

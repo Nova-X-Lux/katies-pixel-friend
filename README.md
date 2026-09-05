@@ -7,7 +7,7 @@ configuration is available.
 
 ## Current experience
 
-- Username and password login with no email field
+- Username-only entry with no email or password
 - Cat, hamster, and panda adoption
 - Immediate companion naming
 - Mood, time, action, and decoration-aware dialogue
@@ -31,7 +31,7 @@ npm.cmd run dev
 ```
 
 Without Supabase environment values, development uses a clearly marked local
-preview login. Use the same preview username to load the same local save.
+preview. Use the same preview username to load the same local save.
 
 ## Verification
 
@@ -43,7 +43,7 @@ npm.cmd run build
 
 ## Production setup
 
-1. Follow `supabase/README.md` to create the save table and Katie's user.
+1. Follow `supabase/README.md` to create the username save table.
 2. Create a public GitHub repository named `katies-pixel-friend`.
 3. Add the two Actions secrets documented in `supabase/README.md`.
 4. Push `main` and enable GitHub Pages with GitHub Actions as its source.
@@ -54,8 +54,9 @@ npm.cmd run build
 - The GitHub repository and Pages website are public.
 - Do not add private messages, chat exports, private photographs, addresses, or
   personal records to this repository.
-- The Supabase publishable key may be present in browser code; access is
-  restricted by Auth and Row Level Security.
+- The Supabase publishable key may be present in browser code. Username-only
+  access is intentionally shared: anyone who knows a username can open, change,
+  or reset that save.
 - Never commit a password, Supabase secret key, or service-role key.
 
 ## Updating later

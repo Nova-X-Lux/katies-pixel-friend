@@ -1,21 +1,19 @@
 import { useState, type FormEvent } from "react";
-import { isCloudConfigured, signIn } from "../lib/supabase";
+import { enterWithUsername, isCloudConfigured } from "../lib/supabase";
 import type { AppUser } from "../types";
 import { PixelIcon } from "./PixelIcon";
 
 export function LoginScreen({ onLogin }: { onLogin: (user: AppUser) => void }) {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
     setBusy(true);
     try {
-      onLogin(await signIn(username, password));
+      onLogin(await enterWithUsername(username));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to sign in.");
     } finally {
@@ -32,7 +30,7 @@ export function LoginScreen({ onLogin }: { onLogin: (user: AppUser) => void }) {
         <p className="login-copy">Your little companion is waiting inside.</p>
 
         {!isCloudConfigured && import.meta.env.DEV && (
-          <p className="preview-note">Local preview: use any username and a password of 6+ characters.</p>
+          <p className="preview-note">Local preview: use the same username to return to the same friend.</p>
         )}
 
         <form onSubmit={submit} className="login-form">
@@ -44,34 +42,15 @@ export function LoginScreen({ onLogin }: { onLogin: (user: AppUser) => void }) {
               autoComplete="username"
               inputMode="text"
               autoCapitalize="none"
+              maxLength={24}
+              aria-describedby="username-hint"
               required
             />
           </label>
-          <div className="login-field">
-            <label htmlFor="login-password">Password</label>
-            <div className="password-field">
-              <input
-                id="login-password"
-                type={passwordVisible ? "text" : "password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password"
-                minLength={6}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setPasswordVisible((visible) => !visible)}
-                aria-label={passwordVisible ? "Hide password" : "Show password"}
-                aria-pressed={passwordVisible}
-              >
-                {passwordVisible ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
+          <p id="username-hint" className="username-hint">No password needed. Use the same username each time.</p>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="primary-button" disabled={busy}>
-            {busy ? "Opening the door…" : "Enter"}
+            {busy ? "Opening the door…" : "Meet my friend"}
           </button>
         </form>
       </section>

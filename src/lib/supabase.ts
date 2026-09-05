@@ -3,84 +3,81 @@ import type { AppUser, PetSave } from "../types";
 
 const url = import.meta.env.VITE_SUPABASE_URL?.trim();
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
-const aliasDomain = import.meta.env.VITE_AUTH_ALIAS_DOMAIN?.trim() || "pixel-friend.example";
+const lastUsernameKey = "kpf:last-username";
 
 export const isCloudConfigured = Boolean(url && publishableKey);
 
 export const supabase = isCloudConfigured
   ? createClient(url!, publishableKey!, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
   : null;
 
-function normalizeUsername(username: string): string {
-  return username.toLowerCase().trim().replace(/[^a-z0-9_-]/g, "");
+export function normalizeUsername(username: string): string {
+  return username.toLowerCase().trim();
 }
 
-function aliasEmail(username: string): string {
-  return `${normalizeUsername(username)}@${aliasDomain}`;
+export function isValidUsername(username: string): boolean {
+  return /^[a-z0-9_-]{1,24}$/.test(normalizeUsername(username));
 }
 
-export async function restoreCloudUser(): Promise<AppUser | null> {
-  if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
-  if (!data.session?.user) return null;
-  const username = localStorage.getItem("kpf:last-username") || "Katie";
-  return { id: data.session.user.id, username, cloud: true };
-}
-
-export async function signIn(username: string, password: string): Promise<AppUser> {
+export function restoreUser(): AppUser | null {
+  const username = localStorage.getItem(lastUsernameKey);
+  if (!username || !isValidUsername(username)) return null;
   const cleaned = normalizeUsername(username);
-  if (!cleaned || password.length < 6) {
-    throw new Error("Enter a username and a password with at least 6 characters.");
+  return { id: cleaned, username: cleaned, cloud: isCloudConfigured };
+}
+
+export async function enterWithUsername(username: string): Promise<AppUser> {
+  const cleaned = normalizeUsername(username);
+  if (!isValidUsername(cleaned)) {
+    throw new Error("Use 1–24 letters, numbers, underscores or hyphens.");
   }
 
   if (!supabase) {
-    if (!import.meta.env.DEV) throw new Error("Cloud login has not been connected yet.");
-    localStorage.setItem("kpf:last-username", username.trim());
+    if (!import.meta.env.DEV) throw new Error("Cloud saving has not been connected yet.");
+    localStorage.setItem(lastUsernameKey, cleaned);
     return { id: `preview-${cleaned}`, username: username.trim(), cloud: false };
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: aliasEmail(cleaned),
-    password,
-  });
-  if (error || !data.user) throw new Error("That username or password was not recognised.");
-  localStorage.setItem("kpf:last-username", username.trim());
-  return { id: data.user.id, username: username.trim(), cloud: true };
+  localStorage.setItem(lastUsernameKey, cleaned);
+  return { id: cleaned, username: cleaned, cloud: true };
 }
 
-export async function signOut(): Promise<void> {
-  await supabase?.auth.signOut();
+export function forgetUsername(): void {
+  localStorage.removeItem(lastUsernameKey);
 }
 
-export async function loadCloudSave(userId: string): Promise<PetSave | null> {
+export async function loadCloudSave(username: string): Promise<PetSave | null> {
   if (!supabase) return null;
   const { data, error } = await supabase
-    .from("pet_saves")
+    .from("username_pet_saves")
     .select("state")
-    .eq("user_id", userId)
+    .eq("username", normalizeUsername(username))
     .maybeSingle();
   if (error) throw error;
   return (data?.state as PetSave | undefined) ?? null;
 }
 
-export async function saveToCloud(userId: string, state: PetSave): Promise<void> {
+export async function saveToCloud(username: string, state: PetSave): Promise<void> {
   if (!supabase) return;
-  const { error } = await supabase.from("pet_saves").upsert(
+  const { error } = await supabase.from("username_pet_saves").upsert(
     {
-      user_id: userId,
+      username: normalizeUsername(username),
       state,
       schema_version: state.version,
       updated_at: state.updatedAt,
     },
-    { onConflict: "user_id" },
+    { onConflict: "username" },
   );
   if (error) throw error;
 }
 
-export async function deleteCloudSave(userId: string): Promise<void> {
+export async function deleteCloudSave(username: string): Promise<void> {
   if (!supabase) return;
-  const { error } = await supabase.from("pet_saves").delete().eq("user_id", userId);
+  const { error } = await supabase
+    .from("username_pet_saves")
+    .delete()
+    .eq("username", normalizeUsername(username));
   if (error) throw error;
 }

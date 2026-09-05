@@ -1,24 +1,18 @@
 # Supabase setup
 
-The public site shows a username and password. Supabase Auth still needs an
-internal identity, so the client maps a normalized username to:
-
-```text
-<username>@pixel-friend.example
-```
-
-Katie never needs to see or type that alias.
+The public site uses a username with no email or password. The normalized
+username is the cloud save key. This is intentionally convenient rather than
+private: anyone who knows a username can open, change, or reset its save.
 
 ## Create the project
 
 1. Create a Supabase project.
-2. Open the SQL editor and run
-   `migrations/202609020001_create_pet_saves.sql`.
-3. Open Authentication > Users and create one password user.
-4. Use `katie@pixel-friend.example` as the internal email alias.
-5. Mark the user as confirmed while creating it.
-6. Set a strong password privately. Never commit it or send it in chat.
-7. Do not add a public sign-up screen.
+2. If this is a new project, run
+   `migrations/202609020001_create_pet_saves.sql` in the SQL editor first.
+3. Run `migrations/202609050001_username_only_access.sql` in the SQL editor.
+   It creates the username-keyed table, migrates other existing alias-account
+   saves, and leaves `katie` blank for her first visit. The old authenticated
+   table is not deleted and remains available as a rollback backup.
 
 ## Connect local development
 
@@ -32,6 +26,5 @@ Create these GitHub Actions repository secrets:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-The browser key is designed to be public. The database remains protected by
-Katie's authenticated user ID and the row-level policies in the migration.
-Never use a Supabase secret or service-role key in this project.
+The browser key is designed to be public. Never use a Supabase secret or
+service-role key in this project.

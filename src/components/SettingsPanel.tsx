@@ -110,12 +110,12 @@ export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, on
         {restartOpen && (
           <div className="restart-panel">
             <h2>Restart with a new friend?</h2>
-            <p>This removes {save.petName}, coins, scores and unlocked items. Your login remains.</p>
+            <p>This removes {save.petName}, coins, scores and unlocked items. You can return with the same username.</p>
             <label><span>Type “{save.petName}” to continue</span><input value={typedName} onChange={(event) => setTypedName(event.target.value)} /></label>
             <HoldToRestart disabled={typedName !== save.petName} onConfirm={onRestart} />
           </div>
         )}
-        <button className="setting-row" onClick={onLogout}><span><strong>Sign out</strong><small>Your saved friend will still be here</small></span><b>›</b></button>
+        <button className="setting-row" onClick={onLogout}><span><strong>Switch username</strong><small>Your saved friend will still be here</small></span><b>›</b></button>
       </section>
       <p className="version-note">Katie’s Pixel Friend · Cosy Room Edition</p>
     </main>

@@ -6,7 +6,7 @@ import { PetRoom } from "./components/PetRoom";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { ShopPanel } from "./components/ShopPanel";
 import { applyTimeDecay, awardGame, createPetSave } from "./lib/gameState";
-import { deleteCloudSave, restoreCloudUser, signOut } from "./lib/supabase";
+import { deleteCloudSave, forgetUsername, restoreUser } from "./lib/supabase";
 import { deleteLocalSave, loadBestSave, saveLocally, syncSave } from "./lib/storage";
 import type { AppUser, PetKind, PetSave, SyncStatus } from "./types";
 
@@ -21,10 +21,9 @@ export default function App() {
   const didLoadRef = useRef(false);
 
   useEffect(() => {
-    restoreCloudUser().then((restored) => {
-      setUser(restored);
-      if (!restored) setLoading(false);
-    });
+    const restored = restoreUser();
+    setUser(restored);
+    if (!restored) setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -94,8 +93,8 @@ export default function App() {
     }
   }
 
-  async function logout() {
-    await signOut();
+  function logout() {
+    forgetUsername();
     didLoadRef.current = false;
     setUser(null);
     setSave(null);
