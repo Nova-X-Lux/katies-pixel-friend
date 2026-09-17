@@ -3,14 +3,16 @@ import type { PetSave } from "../types";
 import { PixelIcon } from "./PixelIcon";
 import { MemoryGame } from "./MemoryGame";
 import { TreatCatch } from "./TreatCatch";
+import { SnackStack } from "./SnackStack";
 
-type GameId = "memory" | "catch";
+type GameId = "memory" | "catch" | "stack";
 
 export function GameHub({ save, onAward, onClose }: { save: PetSave; onAward: (gameId: string, score: number, coins: number) => void; onClose: () => void }) {
   const [game, setGame] = useState<GameId | null>(null);
 
   if (game === "memory") return <MemoryGame previousBest={save.highScores.memory ?? 0} onFinish={(score, coins) => onAward("memory", score, coins)} onBack={() => setGame(null)} />;
   if (game === "catch") return <TreatCatch petType={save.petType} previousBest={save.highScores.catch ?? 0} onFinish={(score, coins) => onAward("catch", score, coins)} onBack={() => setGame(null)} />;
+  if (game === "stack") return <SnackStack previousBest={save.highScores.stack ?? 0} onFinish={(score, coins) => onAward("stack", score, coins)} onBack={() => setGame(null)} />;
 
   return (
     <main className="games-shell">
@@ -20,6 +22,10 @@ export function GameHub({ save, onAward, onClose }: { save: PetSave; onAward: (g
         <span />
       </header>
       <div className="game-list">
+        <button onClick={() => setGame("stack")} className="game-card game-card--stack">
+          <span className="game-card__art"><span className="snack-mini-cake" aria-hidden="true"><i /><i /><i /></span></span>
+          <span><strong>Snack stack</strong><small>One carefully balanced layer at a time.</small><b>Best: {save.highScores.stack ?? 0} · 12 layers to the top</b></span>
+        </button>
         <button onClick={() => setGame("catch")} className="game-card game-card--catch">
           <span className="game-card__art"><PixelIcon name="apple" size={58} /><PixelIcon name="star" size={34} /></span>
           <span><strong>Treat catch</strong><small>Catch snacks before they tumble past.</small><b>Best: {save.highScores.catch ?? 0}</b></span>

@@ -1,14 +1,15 @@
 import { PETS } from "../data/pets";
 import { SHOP_ITEMS } from "../data/shop";
+import { createKeepsakes, recordActivity, stampMilestones } from "./keepsakes";
 import type { CareAction, FeedItem, PetInteractionKind, PetKind, PetMood, PetSave, PetStats, RoomPhase, ShopItem } from "../types";
 
-const clamp = (value: number) => Math.max(15, Math.min(100, Math.round(value)));
+const clamp = (value: number) => Math.max(15, Math.min(100, value));
 
-const touch = (save: PetSave, changes: Partial<PetSave>): PetSave => ({
+const touch = (save: PetSave, changes: Partial<PetSave>, now = new Date()): PetSave => ({
   ...save,
   ...changes,
-  lastSeenAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  lastSeenAt: now.toISOString(),
+  updatedAt: now.toISOString(),
 });
 
 const interaction = (kind: PetInteractionKind, detail?: string) => ({
@@ -19,8 +20,8 @@ const interaction = (kind: PetInteractionKind, detail?: string) => ({
 
 export function createPetSave(petType: PetKind, petName: string): PetSave {
   const now = new Date().toISOString();
-  return {
-    version: 2,
+  return stampMilestones({
+    version: 3,
     petType,
     petName: petName.trim(),
     stats: { fullness: 82, happiness: 86, energy: 78, cleanliness: 88 },
@@ -33,25 +34,28 @@ export function createPetSave(petType: PetKind, petName: string): PetSave {
     createdAt: now,
     updatedAt: now,
     lastInteraction: { kind: "adopted", at: now, detail: petType },
-  };
+    keepsakes: createKeepsakes(),
+  });
 }
 
 export function applyTimeDecay(save: PetSave, now = new Date()): PetSave {
   const elapsedHours = Math.max(0, (now.getTime() - new Date(save.lastSeenAt).getTime()) / 3_600_000);
-  if (elapsedHours < 0.1) return save;
+  if (!Number.isFinite(elapsedHours) || elapsedHours < 0.1) return save;
 
   const decayScale = Math.min(elapsedHours, 72);
+  const hoursUntilRested = Math.max(0, (96 - save.stats.energy) / 1.9);
+  const sleepingHours = save.isSleeping ? Math.min(decayScale, hoursUntilRested) : 0;
   const stats: PetStats = {
     fullness: clamp(save.stats.fullness - decayScale * 1.45),
     happiness: clamp(save.stats.happiness - decayScale * 0.62),
-    energy: clamp(save.stats.energy - decayScale * (save.isSleeping ? -1.9 : 0.9)),
+    energy: clamp(save.stats.energy + sleepingHours * 1.9 - (decayScale - sleepingHours) * 0.9),
     cleanliness: clamp(save.stats.cleanliness - decayScale * 0.52),
   };
 
   return touch(save, {
     stats,
-    isSleeping: save.isSleeping && stats.energy < 96,
-  });
+    isSleeping: save.isSleeping && decayScale + 1e-9 < hoursUntilRested,
+  }, now);
 }
 
 export function deriveMood(save: PetSave): PetMood {
@@ -67,7 +71,7 @@ export function deriveMood(save: PetSave): PetMood {
 export function feedPet(save: PetSave, item: FeedItem): PetSave {
   const availability = getFeedAvailability(save, item);
   if (!availability.allowed) return save;
-  return touch(save, {
+  return recordActivity(touch(save, {
     coins: save.coins - item.cost,
     isSleeping: false,
     stats: {
@@ -76,7 +80,7 @@ export function feedPet(save: PetSave, item: FeedItem): PetSave {
       happiness: clamp(save.stats.happiness + item.happiness),
     },
     lastInteraction: interaction("fed", item.name),
-  });
+  }), "feed", new Date(), item.id);
 }
 
 export type FeedBlockReason = "too-full" | "not-enough-coins" | null;
@@ -98,7 +102,7 @@ export function getFeedAvailability(save: PetSave, item: FeedItem): FeedAvailabi
 
 export function careForPet(save: PetSave, action: CareAction): PetSave {
   if (action === "pet") {
-    return touch(save, {
+    return recordActivity(touch(save, {
       isSleeping: false,
       stats: {
         ...save.stats,
@@ -106,10 +110,10 @@ export function careForPet(save: PetSave, action: CareAction): PetSave {
         energy: clamp(save.stats.energy - 2),
       },
       lastInteraction: interaction("petted"),
-    });
+    }), "pet");
   }
   if (action === "wash") {
-    return touch(save, {
+    return recordActivity(touch(save, {
       isSleeping: false,
       stats: {
         ...save.stats,
@@ -117,9 +121,9 @@ export function careForPet(save: PetSave, action: CareAction): PetSave {
         happiness: clamp(save.stats.happiness + (save.petType === "cat" ? -2 : 3)),
       },
       lastInteraction: interaction("washed"),
-    });
+    }), "wash");
   }
-  return touch(save, {
+  return recordActivity(touch(save, {
     isSleeping: true,
     stats: {
       ...save.stats,
@@ -127,7 +131,7 @@ export function careForPet(save: PetSave, action: CareAction): PetSave {
       fullness: clamp(save.stats.fullness - 3),
     },
     lastInteraction: interaction("napped"),
-  });
+  }), "nap");
 }
 
 export function wakePet(save: PetSave): PetSave {
@@ -135,7 +139,7 @@ export function wakePet(save: PetSave): PetSave {
 }
 
 export function awardGame(save: PetSave, gameId: string, score: number, coins: number): PetSave {
-  return touch(save, {
+  return recordActivity(touch(save, {
     coins: save.coins + Math.max(0, coins),
     isSleeping: false,
     highScores: {
@@ -148,7 +152,7 @@ export function awardGame(save: PetSave, gameId: string, score: number, coins: n
       energy: clamp(save.stats.energy - 7),
     },
     lastInteraction: interaction("played", gameId),
-  });
+  }), "play");
 }
 
 export function getTreatCatchReward(score: number): number {
@@ -162,13 +166,13 @@ export function getMemoryReward(moves: number): number {
 export function buyShopItem(save: PetSave, item: ShopItem): PetSave {
   const owned = save.unlockedDecorations ?? ["heart-lamp"];
   if (owned.includes(item.id)) {
-    return touch(save, {
+    return recordActivity(touch(save, {
       selectedDecoration: item.id,
       lastInteraction: interaction("decorated", item.name),
-    });
+    }), "decorate");
   }
   if (save.coins < item.cost) return save;
-  return touch(save, {
+  return recordActivity(touch(save, {
     coins: save.coins - item.cost,
     unlockedDecorations: [...owned, item.id],
     selectedDecoration: item.id,
@@ -177,17 +181,17 @@ export function buyShopItem(save: PetSave, item: ShopItem): PetSave {
       happiness: clamp(save.stats.happiness + 4),
     },
     lastInteraction: interaction("decorated", item.name),
-  });
+  }), "decorate");
 }
 
 export function selectShopItem(save: PetSave, itemId: string): PetSave {
   const owned = save.unlockedDecorations ?? ["heart-lamp"];
   if (!owned.includes(itemId)) return save;
   const item = SHOP_ITEMS.find((candidate) => candidate.id === itemId);
-  return touch(save, {
+  return recordActivity(touch(save, {
     selectedDecoration: itemId,
     lastInteraction: interaction("decorated", item?.name ?? itemId),
-  });
+  }), "decorate");
 }
 
 export function getRoomPhase(now = new Date()): RoomPhase {

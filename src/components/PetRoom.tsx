@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PETS, getDialogue } from "../data/pets";
 import { careForPet, deriveMood, feedPet, formatPetAge, getFeedAvailability, getRoomPhase, wakePet } from "../lib/gameState";
 import type { CareAction, PetSave, SyncStatus } from "../types";
 import { PixelIcon } from "./PixelIcon";
 import { StatBar } from "./StatBar";
+import { dailyFor, DAILY_TASKS, friendshipLevel } from "../lib/keepsakes";
+import { playSound } from "../lib/sound";
+import "./room-details.css";
 
 interface PetRoomProps {
   save: PetSave;
@@ -12,6 +15,7 @@ interface PetRoomProps {
   onGames: () => void;
   onShop: () => void;
   onSettings: () => void;
+  onBook: () => void;
 }
 
 function RoomDecoration({ itemId }: { itemId: string }) {
@@ -23,10 +27,15 @@ function RoomDecoration({ itemId }: { itemId: string }) {
   return <div className="heart-lamp" aria-hidden="true"><PixelIcon name="heart" size={28} /></div>;
 }
 
-export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSettings }: PetRoomProps) {
+export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSettings, onBook }: PetRoomProps) {
   const [sheet, setSheet] = useState<"feed" | "care" | null>(null);
   const [dialogueSeed, setDialogueSeed] = useState(() => Date.now());
   const [roomPhase, setRoomPhase] = useState(getRoomPhase);
+  const [reaction, setReaction] = useState(0);
+  const sheetRef = useRef<HTMLElement>(null);
+  const daily = dailyFor(save);
+  const rewardsReady = DAILY_TASKS.filter(t => daily.activities.includes(t.id) && !daily.claimed.includes(t.id)).length;
+  const friendship = friendshipLevel(save.keepsakes.friendship);
   const mood = deriveMood(save);
   const pet = PETS[save.petType];
   const selectedDecoration = save.selectedDecoration || "heart-lamp";
@@ -45,7 +54,7 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
     : syncStatus.phase === "saving"
       ? "Saving…"
       : syncStatus.phase === "error"
-        ? "Cloud retry needed"
+        ? "Save retry needed"
         : "Saved on this phone";
 
   useEffect(() => {
@@ -53,9 +62,30 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!sheet) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const panel = sheetRef.current;
+    const focusable = () => Array.from(panel?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), [tabindex="0"]') ?? []);
+    focusable()[0]?.focus();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); setSheet(null); }
+      if (event.key !== "Tab") return;
+      const items = focusable(), first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = overflow; previous?.focus(); };
+  }, [sheet]);
+
+  function react() { setReaction(n => n + 1); setDialogueSeed(Date.now()); playSound("tap"); }
+
   function care(action: CareAction) {
     onChange(careForPet(save, action));
-    setDialogueSeed(Date.now());
+    react();
     setSheet(null);
   }
 
@@ -67,7 +97,7 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
         <button className="icon-button" onClick={onSettings} aria-label="Open settings">⚙</button>
       </header>
 
-      <section className={`pixel-room time-${roomPhase} mood-${mood}`} aria-label={`${save.petName}'s room during the ${roomPhase}`}>
+      <section className={`pixel-room palette-${save.keepsakes.theme} time-${roomPhase} mood-${mood}`} aria-label={`${save.petName}'s room during the ${roomPhase}`}>
         <div className="pixel-window" aria-hidden="true"><span /><i /><b /></div>
         <div className="pixel-lamp" aria-hidden="true"><span /><i /></div>
         <div className={`pixel-rug ${selectedDecoration === "flower-rug" ? "pixel-rug--flower" : ""}`} aria-hidden="true" />
@@ -76,12 +106,13 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
           className="pet-stage"
           onClick={() => {
             onChange(save.isSleeping ? wakePet(save) : careForPet(save, "pet"));
-            setDialogueSeed(Date.now());
+            react();
           }}
           aria-label={save.isSleeping ? `Wake ${save.petName}` : `Pet ${save.petName}`}
         >
           <img className="pet-sprite" src={pet.asset} alt={`${pet.label} named ${save.petName}`} />
           {mood === "sleeping" && <span className="sleep-pixels" aria-hidden="true">z z</span>}
+          {reaction > 0 && <span key={reaction} className="pet-reaction" aria-hidden="true"><PixelIcon name="heart" size={24} /><PixelIcon name="sparkle" size={17} /></span>}
         </button>
       </section>
 
@@ -104,11 +135,16 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
           <button className="action-dock__play" onClick={onGames}><PixelIcon name="controller" /><span>Play</span></button>
           <button onClick={onShop}><PixelIcon name="shop" /><span>Shop</span></button>
         </nav>
+        <button className="keepsake-link" onClick={onBook}>
+          <span className="tiny-book" aria-hidden="true"><PixelIcon name="heart" size={18} /></span>
+          <span><strong>Our keepsakes</strong><small>{rewardsReady ? `${rewardsReady} little reward${rewardsReady > 1 ? "s" : ""} to collect` : friendship.name}</small></span>
+          <b aria-hidden="true">{rewardsReady ? <span className="reward-dot" /> : "↗"}</b>
+        </button>
       </section>
 
       {sheet && (
         <div className="sheet-backdrop" onClick={() => setSheet(null)}>
-          <section className="bottom-sheet" onClick={(event) => event.stopPropagation()} aria-modal="true" role="dialog" aria-label={sheet === "feed" ? "Choose food" : "Care for your friend"}>
+          <section ref={sheetRef} className="bottom-sheet" onClick={(event) => event.stopPropagation()} aria-modal="true" role="dialog" aria-label={sheet === "feed" ? "Choose food" : "Care for your friend"}>
             <div className="sheet-handle" />
             <div className="sheet-heading"><h2>{sheet === "feed" ? "Choose a snack" : `Care for ${save.petName}`}</h2><button onClick={() => setSheet(null)} aria-label="Close">×</button></div>
             {sheet === "feed" ? (
@@ -119,12 +155,12 @@ export function PetRoom({ save, syncStatus, onChange, onGames, onShop, onSetting
                     ? "Too full for this"
                     : availability.reason === "not-enough-coins"
                       ? `Need ${item.cost} coins`
-                      : `+${availability.fullnessGain} Full · +${availability.happinessGain} Happy`;
+                      : `+${Math.round(availability.fullnessGain)} Full · +${Math.round(availability.happinessGain)} Happy`;
                   return (
                     <button
                       key={item.id}
                       disabled={!availability.allowed}
-                      onClick={() => { onChange(feedPet(save, item)); setDialogueSeed(Date.now()); setSheet(null); }}
+                      onClick={() => { onChange(feedPet(save, item)); react(); setSheet(null); }}
                     >
                       <PixelIcon name={item.icon} size={38} />
                       <span><strong>{item.name}</strong><small>{status}</small></span>

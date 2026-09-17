@@ -1,0 +1,75 @@
+.keepsake-shell { min-height: 100dvh; width: min(100%, 540px); margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom)); background: #ddbec5; }
+.keepsake-shell .screen-heading { margin-bottom: 20px; grid-template-columns: 70px 1fr 66px; }
+.keepsake-shell .screen-heading h1 { font-size: 1.75rem; }
+.keepsake-shell .back-button { white-space: nowrap; padding: 8px 6px; min-height: 44px; font-size: .8rem; }
+.book-tabs { display: grid; grid-template-columns: .8fr 1fr 1.1fr; gap: 5px; padding: 0 6px; }
+.book-tabs button { min-height: 46px; padding: 9px 4px; border: 2px solid #795864; border-bottom: 0; background: #cca6b2; color: #493641; font-weight: 800; font-size: .78rem; cursor: pointer; }
+.book-tabs button[aria-current] { background: #fffbef; position: relative; top: 2px; z-index: 1; }
+.book-paper { padding: 23px 20px 16px; border: 2px solid #795864; box-shadow: 5px 6px 0 #ad8995; background: repeating-linear-gradient(transparent 0 27px, #baaa8d13 27px 28px), #fffbef; }
+.book-date { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 24px; font-size: .64rem; font-weight: 800; color: #7b6366; }
+.book-paper h2 { font-size: clamp(1.8rem, 8vw, 2.35rem); line-height: .96; margin-bottom: 11px; font-weight: 600; }
+.book-intro { font-size: .83rem; line-height: 1.55; color: #745861; margin-bottom: 22px; max-width: 34ch; }
+.friendship-note { display: flex; gap: 12px; align-items: center; padding: 14px; border: 1px solid #dcb8b5; background: #f5e4dd; }
+.friendship-note > div { flex: 1; min-width: 0; }
+.friendship-note strong { font-family: "Pixelify Sans", monospace; font-size: 1.2rem; font-weight: 600; }
+.friendship-note > div > span { display: block; font-size: .65rem; color: #745861; margin-top: 3px; }
+.friendship-track { height: 7px; margin-top: 9px; background: #ddc7c1; }
+.friendship-track i { height: 100%; display: block; background: #a85770; transition: width 250ms; }
+.book-caption { font-size: .66rem; line-height: 1.5; margin: 8px 0 20px; color: #745861; }
+.daily-list { border-block: 1px solid #d8c5b7; }
+.daily-task { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 89px; padding: 15px 0; border-bottom: 1px solid #e6d7c8; }
+.daily-task:last-child { border-bottom: 0; }
+.daily-task h3, .parcel-note h3 { margin: 0 0 4px; font-size: .86rem; }
+.daily-task p, .parcel-note p { margin: 0; font-size: .71rem; line-height: 1.45; color: #745861; }
+.daily-task.is-claimed h3 { color: #647b62; }
+.book-claim { display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-height: 44px; padding: 7px 10px; color: #493641; background: #f2d390; border: 2px solid #806046; box-shadow: 2px 2px 0 #c8af8d; font-size: .74rem; font-weight: 800; cursor: pointer; }
+.book-claim:disabled { color: #7b6963; background: #e8e0cf; border-color: #c2b6a8; box-shadow: none; cursor: default; }
+.book-go { min-height: 44px; padding: 6px; border: 0; background: transparent; color: #805565; font-weight: 800; cursor: pointer; font-size: .75rem; }
+.book-go span { font-size: 1.1rem; margin-left: 3px; }
+.claimed-mark { padding: 8px; color: #587952; font-size: 1.2rem; }
+.parcel-note { display: grid; grid-template-columns: 50px 1fr; gap: 17px; margin-top: 24px; align-items: center; }
+.parcel-note .book-claim { margin-top: 12px; }
+.pixel-parcel { width: 44px; height: 38px; background: #bf8c65; border: 3px solid #79503f; position: relative; box-shadow: 3px 3px 0 #e5d5bd; }
+.pixel-parcel::before { content: ""; position: absolute; left: 15px; width: 8px; top: 0; bottom: 0; background: #f0d498; }
+.pixel-parcel i { position: absolute; top: -7px; left: -5px; width: 48px; height: 12px; background: #d4a276; border: 3px solid #79503f; transition: transform 160ms steps(3); }
+.pixel-parcel b { position: absolute; width: 19px; height: 10px; border: 3px solid #b37563; top: -15px; left: 9px; }
+.pixel-parcel.is-open i { transform: translate(-2px, -9px) rotate(-8deg); }
+.pixel-parcel.is-open b { opacity: 0; }
+.book-footnote { margin: 23px 0 0; color: #7b6963; font-size: .65rem; line-height: 1.5; text-align: center; }
+.book-message { min-height: 20px; margin: 18px 0 0; text-align: center; color: #55724b; font-size: .79rem; font-weight: 800; }
+.pet-polaroid { position: relative; background: #fffef7; padding: 10px 10px 17px; width: 77%; margin: 27px auto 24px; transform: rotate(-3deg); box-shadow: 1px 3px 8px #49364126; text-align: center; }
+.pet-polaroid img { display: block; width: 100%; height: 158px; padding: 7px; object-fit: contain; background: #e7c7cf; image-rendering: pixelated; }
+.pet-polaroid strong { display: block; font: 1.6rem "Pixelify Sans", monospace; margin-top: 9px; overflow-wrap: anywhere; }
+.pet-polaroid > span:last-child { display: block; color: #745861; font-size: .63rem; margin-top: 3px; }
+.paper-tape { position: absolute; width: 69px; height: 22px; top: -12px; left: calc(50% - 35px); background: #e3ba84aa; transform: rotate(5deg); }
+.book-facts { display: grid; gap: 12px; margin: 25px 0; }
+.book-facts > div { display: flex; gap: 12px; justify-content: space-between; border-bottom: 1px dashed #cdb7a7; padding-bottom: 8px; font-size: .73rem; }
+.book-facts dt { color: #745861; }
+.book-facts dd { margin: 0; font-weight: 800; text-align: right; }
+.collection-heading { display: flex; align-items: center; justify-content: space-between; margin: 25px 0 15px; }
+.collection-heading h3 { margin: 0; font: 1.4rem "Pixelify Sans", monospace; }
+.collection-heading > span { font-size: .72rem; color: #745861; }
+.stamp-collection { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+.keepsake-stamp { text-align: center; }
+.stamp-art { width: 70px; height: 76px; display: grid; place-items: center; margin: 0 auto 9px; border: 2px dashed #ccbfb0; background: #ede6d8; }
+.keepsake-stamp:not(.is-earned) .pixel-icon { filter: grayscale(1); opacity: .32; }
+.is-earned .stamp-art { border: 3px double #b77582; background: #f5dce2; box-shadow: 3px 3px 0 #e3d4c2; transform: rotate(3deg); }
+.is-earned:nth-child(even) .stamp-art { background: #e0e6cb; border-color: #879773; transform: rotate(-4deg); }
+.keepsake-stamp h3 { margin: 0 0 4px; font-size: .72rem; }
+.keepsake-stamp p { font-size: .63rem; color: #745861; line-height: 1.4; margin: 0; }
+.palette-preview { height: 220px; border: 3px solid var(--plum); position: relative; overflow: hidden; isolation: isolate; transition: background 180ms; }
+.preview-floor { position: absolute; inset: auto 0 0; height: 28%; border-top: 3px solid var(--plum); z-index: -1; }
+.preview-window { position: absolute; left: 18px; top: 18px; width: 48px; height: 60px; background: #fff1bb; border: 4px solid #fff7e4; box-shadow: 0 0 0 2px #896d65; }
+.palette-preview img { position: absolute; height: 74%; width: 80%; object-fit: contain; left: 10%; bottom: 9%; image-rendering: pixelated; }
+.preview-label { position: absolute; right: 6px; bottom: 6px; background: #fff8e9; padding: 4px 7px; font-size: .65rem; border: 1px solid #896d65; }
+.palette-swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
+.palette-swatches button { padding: 5px 2px; border: 2px solid transparent; color: #745861; background: transparent; cursor: pointer; }
+.palette-swatches button[aria-pressed=true] { border-color: #795864; background: #f1e5d7; color: #493641; }
+.palette-swatches i { display: block; margin: 0 auto 8px; width: 34px; height: 34px; border: 2px solid #795864; }
+.palette-swatches span { display: block; font-size: .62rem; font-weight: 800; line-height: 1.3; }
+.palette-description { margin-top: 20px; }
+.palette-description h3 { font: 1.6rem "Pixelify Sans", monospace; margin: 0 0 5px; }
+.palette-description p { font-size: .75rem; color: #745861; line-height: 1.5; }
+.palette-description button { width: 100%; font-size: 1rem; }
+@media(min-width: 541px) { .keepsake-shell { min-height: calc(100dvh - 40px); border: 4px solid var(--plum); box-shadow: 10px 10px 0 #4936413d; } }
+@media(max-width: 365px) { .keepsake-shell { padding-inline: 10px; } .book-paper { padding-inline: 15px; } .book-tabs button { font-size: .71rem; } .daily-task { gap: 7px; } }

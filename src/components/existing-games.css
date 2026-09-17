@@ -1,0 +1,38 @@
+.catch-round-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.catch-round-footer .score-readout { margin: 0; }
+.catch-round-footer .back-button { min-width: 82px; }
+
+.game-control-hint {
+  margin: 14px 0 0;
+  color: #765967;
+  text-align: center;
+  font-size: .76rem;
+  line-height: 1.5;
+}
+
+.memory-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: -4px 0 14px;
+  color: #765967;
+  font-size: .72rem;
+}
+
+.memory-progress > span:first-child { color: var(--plum); font-weight: 800; }
+.memory-card:disabled { cursor: default; }
+.memory-card:focus-visible { outline: 3px solid var(--plum); outline-offset: 5px; }
+.lane-controls button:disabled { cursor: default; }
+
+@media (max-width: 360px) {
+  .memory-progress { gap: 6px; font-size: .65rem; }
+  .game-control-hint { font-size: .7rem; }
+}

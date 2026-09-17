@@ -37,7 +37,7 @@ export interface PetStats {
 }
 
 export interface PetSave {
-  version: 2;
+  version: 3;
   petType: PetKind;
   petName: string;
   stats: PetStats;
@@ -50,6 +50,24 @@ export interface PetSave {
   createdAt: string;
   updatedAt: string;
   lastInteraction?: PetInteraction;
+  keepsakes: Keepsakes;
+}
+
+export type DailyActivity = "pet" | "wash" | "play" | "feed" | "nap" | "decorate";
+export interface Keepsakes {
+  friendship: number;
+  gamesPlayed: number;
+  careDays: number;
+  foodCounts: Record<string, number>;
+  daily: {
+    date: string;
+    activities: DailyActivity[];
+    claimed: string[];
+    parcelOpened: boolean;
+  };
+  stamps: Record<string, string>;
+  themes: string[];
+  theme: string;
 }
 
 export interface AppUser {

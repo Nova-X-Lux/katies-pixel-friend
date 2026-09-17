@@ -119,7 +119,11 @@ function recentInteractionDialogue(interactionValue: PetInteraction | undefined,
     washed: "Look at me! Fresh, fluffy and ready.",
     napped: "This is the cosiest possible nap spot.",
     woken: "I am awake! What should we do together?",
-    played: detail === "memory" ? "We found every matching pair together!" : "I am still thinking about all those falling treats!",
+    played: detail === "memory"
+      ? "We found every matching pair together!"
+      : detail === "stack"
+        ? "Do you think we could fit one more layer on that cake?"
+        : "I am still thinking about all those falling treats!",
     decorated: detail ? `The ${detail.toLowerCase()} makes my room feel even more like home.` : "My room feels even cosier now.",
   };
   return lines[interactionValue.kind];

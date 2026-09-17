@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AppUser, PetSave, SyncStatus } from "../types";
+import { playSound } from "../lib/sound";
 
 function HoldToRestart({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -13,7 +14,7 @@ function HoldToRestart({ disabled, onConfirm }: { disabled: boolean; onConfirm: 
   }
 
   function start() {
-    if (disabled) return;
+    if (disabled || timerRef.current !== null) return;
     startRef.current = Date.now();
     timerRef.current = window.setInterval(() => {
       const next = Math.min(100, ((Date.now() - startRef.current) / 1800) * 100);
@@ -35,6 +36,9 @@ function HoldToRestart({ disabled, onConfirm }: { disabled: boolean; onConfirm: 
       onPointerUp={stop}
       onPointerCancel={stop}
       onPointerLeave={stop}
+      onBlur={stop}
+      onKeyDown={event => { if ((event.key === " " || event.key === "Enter") && !event.repeat) { event.preventDefault(); start(); } }}
+      onKeyUp={event => { if (event.key === " " || event.key === "Enter") { event.preventDefault(); stop(); } }}
     >
       <span style={{ width: `${progress}%` }} />
       <b>{progress > 0 ? "Keep holding…" : "Hold to restart"}</b>
@@ -60,10 +64,13 @@ interface SettingsPanelProps {
   onClose: () => void;
   onRestart: () => void;
   onLogout: () => void;
+  busy: boolean;
+  error: string;
 }
 
-export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, onRestart, onLogout }: SettingsPanelProps) {
-  const [sound, setSound] = useState(() => localStorage.getItem("kpf:sound") === "on");
+export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, onRestart, onLogout, busy, error }: SettingsPanelProps) {
+  const [sound, setSound] = useState(() => { try { return localStorage.getItem("kpf:sound") === "on"; } catch { return false; } });
+  const [soundError, setSoundError] = useState("");
   const [restartOpen, setRestartOpen] = useState(false);
   const [typedName, setTypedName] = useState("");
   const [clock, setClock] = useState(Date.now());
@@ -74,16 +81,17 @@ export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, on
   }, []);
 
   function toggleSound() {
-    setSound((current) => {
-      const next = !current;
+    const next = !sound;
+    try {
       localStorage.setItem("kpf:sound", next ? "on" : "off");
-      return next;
-    });
+      setSound(next); setSoundError("");
+      if (next) playSound("tap");
+    } catch { setSoundError("Your browser couldn’t keep that setting. Sound is still off."); }
   }
 
   return (
     <main className="settings-shell">
-      <header className="screen-heading"><button onClick={onClose} className="back-button">‹ Room</button><div><p>Make it yours</p><h1>Settings</h1></div><span /></header>
+      <header className="screen-heading"><button disabled={busy} onClick={onClose} className="back-button">‹ Room</button><div><p>Make it yours</p><h1>Settings</h1></div><span /></header>
       <section className="settings-list">
         <article className="account-card">
           <div className="account-card__icon" aria-hidden="true">{user.username.slice(0, 1).toUpperCase()}</div>
@@ -94,30 +102,33 @@ export function SettingsPanel({ user, save, syncStatus, onRetrySync, onClose, on
               {syncStatus.phase === "saving"
                 ? "Saving to cloud…"
                 : syncStatus.phase === "error"
-                  ? "Saved on this phone · cloud retry needed"
+                  ? "Save needs attention · please retry"
                   : user.cloud
                     ? "Cloud save connected"
                     : "Local preview on this phone"}
             </small>
             <small>{formatLastSaved(syncStatus.lastSavedAt, clock)}</small>
           </div>
-          {syncStatus.phase === "error" && user.cloud && (
-            <button className="retry-button" onClick={() => void onRetrySync()}>Retry</button>
+          {syncStatus.phase === "error" && (
+            <button className="retry-button" disabled={busy} onClick={() => void onRetrySync()}>Retry</button>
           )}
         </article>
-        <button className="setting-row" onClick={toggleSound}><span><strong>Sound effects</strong><small>Starts muted on this phone</small></span><b className={`toggle ${sound ? "is-on" : ""}`}><i /></b></button>
-        <button className="setting-row" onClick={() => setRestartOpen((open) => !open)}><span><strong>Restart companion</strong><small>Return to the adoption screen</small></span><b>›</b></button>
+        <button className="setting-row" role="switch" aria-checked={sound} disabled={busy} onClick={toggleSound}><span><strong>Sound effects</strong><small>Soft little notes · off by default</small></span><b aria-hidden="true" className={`toggle ${sound ? "is-on" : ""}`}><i /></b></button>
+        {soundError && <p className="form-error" role="alert">{soundError}</p>}
+        <button className="setting-row" disabled={busy} aria-expanded={restartOpen} onClick={() => setRestartOpen((open) => !open)}><span><strong>Restart companion</strong><small>Return to the adoption screen</small></span><b>›</b></button>
         {restartOpen && (
           <div className="restart-panel">
             <h2>Restart with a new friend?</h2>
-            <p>This removes {save.petName}, coins, scores and unlocked items. You can return with the same username.</p>
-            <label><span>Type “{save.petName}” to continue</span><input value={typedName} onChange={(event) => setTypedName(event.target.value)} /></label>
-            <HoldToRestart disabled={typedName !== save.petName} onConfirm={onRestart} />
+            <p>This removes {save.petName}, coins, scores, keepsakes and unlocked items. You can return with the same username.</p>
+            <label><span>Type “{save.petName}” to continue</span><input disabled={busy} value={typedName} onChange={(event) => setTypedName(event.target.value)} /></label>
+            <HoldToRestart disabled={busy || typedName !== save.petName} onConfirm={onRestart} />
           </div>
         )}
-        <button className="setting-row" onClick={onLogout}><span><strong>Switch username</strong><small>Your saved friend will still be here</small></span><b>›</b></button>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        {busy && <p role="status">Taking care of your save…</p>}
+        <button className="setting-row" disabled={busy} onClick={onLogout}><span><strong>Switch username</strong><small>Your saved friend will still be here</small></span><b>›</b></button>
       </section>
-      <p className="version-note">Katie’s Pixel Friend · Cosy Room Edition</p>
+      <p className="version-note">Katie’s Pixel Friend · Little Keepsakes Edition</p>
     </main>
   );
 }

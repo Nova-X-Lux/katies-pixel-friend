@@ -21,11 +21,24 @@ export function isValidUsername(username: string): boolean {
   return /^[a-z0-9_-]{1,24}$/.test(normalizeUsername(username));
 }
 
+function userFor(username: string): AppUser {
+  return {
+    id: isCloudConfigured ? username : `preview-${username}`,
+    username,
+    cloud: isCloudConfigured,
+  };
+}
+
 export function restoreUser(): AppUser | null {
-  const username = localStorage.getItem(lastUsernameKey);
-  if (!username || !isValidUsername(username)) return null;
-  const cleaned = normalizeUsername(username);
-  return { id: cleaned, username: cleaned, cloud: isCloudConfigured };
+  try {
+    const username = localStorage.getItem(lastUsernameKey);
+    if (!username || !isValidUsername(username)) return null;
+    if (!isCloudConfigured && !import.meta.env.DEV) return null;
+    return userFor(normalizeUsername(username));
+  } catch {
+    // Remembering a username is optional when browser storage is unavailable.
+    return null;
+  }
 }
 
 export async function enterWithUsername(username: string): Promise<AppUser> {
@@ -34,21 +47,27 @@ export async function enterWithUsername(username: string): Promise<AppUser> {
     throw new Error("Use 1–24 letters, numbers, underscores or hyphens.");
   }
 
-  if (!supabase) {
-    if (!import.meta.env.DEV) throw new Error("Cloud saving has not been connected yet.");
-    localStorage.setItem(lastUsernameKey, cleaned);
-    return { id: `preview-${cleaned}`, username: username.trim(), cloud: false };
+  if (!supabase && !import.meta.env.DEV) {
+    throw new Error("Cloud saving has not been connected yet.");
   }
 
-  localStorage.setItem(lastUsernameKey, cleaned);
-  return { id: cleaned, username: cleaned, cloud: true };
+  try {
+    localStorage.setItem(lastUsernameKey, cleaned);
+  } catch {
+    if (!supabase) throw new Error("This browser cannot save your friend. Allow site storage and try again.");
+  }
+  return userFor(cleaned);
 }
 
 export function forgetUsername(): void {
-  localStorage.removeItem(lastUsernameKey);
+  try {
+    localStorage.removeItem(lastUsernameKey);
+  } catch {
+    // The current session can still be closed if site storage is blocked.
+  }
 }
 
-export async function loadCloudSave(username: string): Promise<PetSave | null> {
+export async function loadCloudSave(username: string): Promise<unknown> {
   if (!supabase) return null;
   const { data, error } = await supabase
     .from("username_pet_saves")
@@ -56,7 +75,7 @@ export async function loadCloudSave(username: string): Promise<PetSave | null> {
     .eq("username", normalizeUsername(username))
     .maybeSingle();
   if (error) throw error;
-  return (data?.state as PetSave | undefined) ?? null;
+  return data === null ? null : data.state;
 }
 
 export async function saveToCloud(username: string, state: PetSave): Promise<void> {

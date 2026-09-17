@@ -31,6 +31,71 @@ describe("game state", () => {
     expect(Math.min(...Object.values(decayed.stats))).toBeGreaterThanOrEqual(15);
   });
 
+  it("accumulates six-minute decay steps like one full hour and uses the supplied timestamp", () => {
+    const save = createPetSave("cat", "Mochi");
+    const start = Date.parse("2026-09-17T12:00:00.000Z");
+    save.lastSeenAt = new Date(start).toISOString();
+    let stepped = save;
+    for (let step = 1; step <= 10; step += 1) {
+      stepped = applyTimeDecay(stepped, new Date(start + step * 6 * 60_000));
+    }
+    const end = new Date(start + 3_600_000);
+    const hourly = applyTimeDecay(save, end);
+    for (const stat of ["fullness", "happiness", "energy", "cleanliness"] as const) {
+      expect(stepped.stats[stat]).toBeCloseTo(hourly.stats[stat], 10);
+    }
+    expect(stepped.stats.fullness).toBeCloseTo(80.55, 10);
+    expect(stepped.stats.happiness).toBeCloseTo(85.38, 10);
+    expect(stepped.lastSeenAt).toBe(end.toISOString());
+    expect(stepped.updatedAt).toBe(end.toISOString());
+  });
+
+  it("restores fractional sleeping energy across frequent updates", () => {
+    const save = createPetSave("hamster", "Pip");
+    const start = Date.parse("2026-09-17T12:00:00.000Z");
+    save.lastSeenAt = new Date(start).toISOString();
+    save.stats.energy = 60;
+    save.isSleeping = true;
+    let stepped = save;
+    for (let step = 1; step <= 10; step += 1) {
+      stepped = applyTimeDecay(stepped, new Date(start + step * 6 * 60_000));
+    }
+    const hourly = applyTimeDecay(save, new Date(start + 3_600_000));
+    expect(stepped.stats.energy).toBeCloseTo(61.9, 10);
+    expect(stepped.stats.energy).toBeCloseTo(hourly.stats.energy, 10);
+    expect(stepped.isSleeping).toBe(true);
+  });
+
+  it("handles waking midway through an elapsed period consistently", () => {
+    const save = createPetSave("panda", "Bean");
+    const start = Date.parse("2026-09-17T12:00:00.000Z");
+    save.lastSeenAt = new Date(start).toISOString();
+    save.stats.energy = 95;
+    save.isSleeping = true;
+    let stepped = save;
+    for (let step = 1; step <= 10; step += 1) {
+      stepped = applyTimeDecay(stepped, new Date(start + step * 6 * 60_000));
+    }
+    const hourly = applyTimeDecay(save, new Date(start + 3_600_000));
+    expect(stepped.isSleeping).toBe(false);
+    expect(hourly.isSleeping).toBe(false);
+    expect(stepped.stats.energy).toBeCloseTo(hourly.stats.energy, 10);
+    expect(hourly.stats.energy).toBeCloseTo(96 - (1 - 1 / 1.9) * .9, 10);
+  });
+
+  it("keeps fractional stats through a save reload and subsequent care", () => {
+    const save = createPetSave("cat", "Mochi");
+    const start = Date.parse("2026-09-17T12:00:00.000Z");
+    save.lastSeenAt = new Date(start).toISOString();
+    const decayed = applyTimeDecay(save, new Date(start + 6 * 60_000));
+    const loaded = migrateSave(JSON.parse(JSON.stringify(decayed)));
+    expect(loaded).not.toBeNull();
+    expect(loaded!.stats).toEqual(decayed.stats);
+    expect(loaded!.stats.fullness).toBeCloseTo(81.855, 10);
+    const cared = careForPet(loaded!, "pet");
+    expect(cared.stats.energy).toBeCloseTo(decayed.stats.energy - 2, 10);
+  });
+
   it("uses mood priorities", () => {
     const save = createPetSave("panda", "Bean");
     save.stats.fullness = 20;
@@ -100,7 +165,7 @@ describe("game state", () => {
     const current = createPetSave("panda", "Bean");
     const legacy = { ...current, version: 1, lastInteraction: undefined };
     const migrated = migrateSave(legacy);
-    expect(migrated?.version).toBe(2);
+    expect(migrated?.version).toBe(3);
     expect(migrated?.petName).toBe("Bean");
     expect(migrated?.coins).toBe(25);
     expect(migrated?.createdAt).toBe(current.createdAt);

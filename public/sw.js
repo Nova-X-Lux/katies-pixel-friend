@@ -1,4 +1,4 @@
-const CACHE_NAME = "katies-pixel-friend-v6";
+const CACHE_NAME = "katies-pixel-friend-v7";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -8,7 +8,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("katies-pixel-friend-") && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim()),
   );
 });
@@ -23,7 +23,7 @@ self.addEventListener("fetch", (event) => {
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => undefined));
         }
         return response;
       })
@@ -31,7 +31,7 @@ self.addEventListener("fetch", (event) => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
         if (event.request.mode === "navigate") {
-          return caches.match(new URL("./", self.registration.scope));
+          return (await caches.match(new URL("./", self.registration.scope))) || Response.error();
         }
         return Response.error();
       }),

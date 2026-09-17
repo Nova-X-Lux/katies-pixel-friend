@@ -588,6 +588,23 @@ input {
   .game-shell { grid-template-rows: auto minmax(300px, 50dvh) auto; }
 }
 
+@media (max-width: 420px) {
+  .games-shell .screen-heading { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; text-align: left; }
+  .games-shell .screen-heading > span:last-child { display: none; }
+  .mini-game .screen-heading { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 7px; min-height: 66px; margin-bottom: 18px; }
+  .mini-game .screen-heading h1,
+  .games-shell .screen-heading h1 { font-size: clamp(1.35rem, 6.2vw, 1.65rem); line-height: 1.05; }
+  .mini-game .screen-heading p,
+  .games-shell .screen-heading p { font-size: .7rem; }
+  .mini-game .screen-heading .back-button,
+  .games-shell .screen-heading .back-button { min-height: 44px; padding-inline: 3px; font-size: .75rem; white-space: nowrap; }
+  .games-shell .game-card { grid-template-columns: 82px minmax(0, 1fr); gap: 12px; padding: 12px; min-height: 132px; }
+  .games-shell .game-card__art { height: 82px; }
+  .games-shell .game-card__art .snack-mini-cake { transform: scale(.85); }
+  .games-shell .game-card > span:last-child { min-width: 0; }
+  .games-shell .game-card strong { font-size: 1.3rem; line-height: 1.1; }
+}
+
 @media (max-width: 365px) {
   .game-shell { grid-template-rows: auto minmax(255px, 43dvh) auto; }
   .pixel-window { transform: scale(.82); transform-origin: top left; }

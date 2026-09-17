@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { PETS } from "../data/pets";
 import type { PetKind } from "../types";
 
-export function AdoptionScreen({ onAdopt }: { onAdopt: (kind: PetKind, name: string) => void }) {
+export function AdoptionScreen({ onAdopt, onSwitch }: { onAdopt: (kind: PetKind, name: string) => void; onSwitch: () => void }) {
   const [selected, setSelected] = useState<PetKind | null>(null);
   const [name, setName] = useState("");
 
@@ -18,7 +18,7 @@ export function AdoptionScreen({ onAdopt }: { onAdopt: (kind: PetKind, name: str
         <h1>Choose your pixel friend</h1>
       </header>
 
-      <div className="pet-choice-row" role="list" aria-label="Companion choices">
+      <div className="pet-choice-row" role="group" aria-label="Companion choices">
         {(Object.keys(PETS) as PetKind[]).map((kind) => {
           const pet = PETS[kind];
           const active = selected === kind;
@@ -58,6 +58,7 @@ export function AdoptionScreen({ onAdopt }: { onAdopt: (kind: PetKind, name: str
       ) : (
         <p className="adoption-hint">Tap a friend to say hello.</p>
       )}
+      <button className="text-button adoption-switch" onClick={onSwitch}>Use another username</button>
     </main>
   );
 }

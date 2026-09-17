@@ -1,0 +1,17 @@
+.pixel-room.palette-sage { --room-wall: #bac8ae; --room-floor-a: #ad8869; --room-floor-b: #ba987c; --room-floor-c: #84664e; }
+.pixel-room.palette-lavender { --room-wall: #c8b8dd; --room-floor-a: #80718e; --room-floor-b: #9783a4; --room-floor-c: #655870; }
+.pixel-room.palette-peach { --room-wall: #efc49f; --room-floor-a: #aa7b64; --room-floor-b: #bb8d76; --room-floor-c: #88614f; }
+.pixel-room.palette-sage.time-night { --room-wall: #677666; --room-floor-a: #665b4d; --room-floor-b: #796d59; --room-floor-c: #50473c; }
+.pixel-room.palette-lavender.time-night { --room-wall: #7a688b; --room-floor-a: #57455e; --room-floor-b: #695572; --room-floor-c: #44384b; }
+.pixel-room.palette-peach.time-night { --room-wall: #a77d74; --room-floor-a: #714f49; --room-floor-b: #885f56; --room-floor-c: #5b3e3c; }
+.pet-reaction { position: absolute; top: 8%; right: 9%; display: flex; gap: 10px; pointer-events: none; animation: care-hearts 900ms steps(7) forwards; }
+.pet-reaction > :last-child { margin-top: 17px; }
+@keyframes care-hearts { 0% { opacity: 0; transform: translateY(10px); } 20%, 65% { opacity: 1; } 100% { opacity: 0; transform: translateY(-28px); } }
+.keepsake-link { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; min-height: 64px; margin-top: 15px; padding: 12px 2px 2px; border: 0; border-top: 1px dashed #b38c99; background: transparent; color: var(--plum); cursor: pointer; }
+.keepsake-link > span:nth-child(2) { flex: 1; }
+.keepsake-link strong { display: block; font: 1.2rem "Pixelify Sans", monospace; font-weight: 600; }
+.keepsake-link small { display: block; margin-top: 3px; color: #795a68; font-size: .68rem; }
+.keepsake-link > b { width: 28px; text-align: center; }
+.tiny-book { width: 35px; height: 42px; display: grid; place-items: center; background: #bd8296; border: 2px solid #795864; box-shadow: inset 3px 0 #e2aebc, 3px 2px 0 #e7d6c0; }
+.reward-dot { display: block; margin: auto; height: 10px; width: 10px; background: #c19541; border: 2px solid #795f32; box-shadow: 0 0 0 3px #efdfbd; }
+@media(prefers-reduced-motion: reduce) { .pet-reaction { animation: none; opacity: 0; } }
